@@ -2,17 +2,31 @@
 
 ;; Given a name denoting a type, return the C string denoting the type.
 (defgeneric c-type (name))
+;; Given a name denoting a type, return the Python string denoting the type.
+(defgeneric python-type (name))
 
 (defmacro define-type-to-c (name c-name)
   `(defmethod c-type ((lisp-name (eql ',name))) ,c-name))
 
+(defmacro define-type-to-python (name python-name)
+  `(defmethod python-type ((lisp-name (eql ',name))) ,python-name))
+
 (define-type-to-c :int "int")
-(define-type-to-c :unsigned-int "unsigned-int")
+(define-type-to-c :unsigned-int "unsigned_int")
 (define-type-to-c :string "char *")
 (define-type-to-c :bool "int")
 (define-type-to-c :float "float")
 (define-type-to-c :double "double")
 (define-type-to-c :void "void")
+
+(define-type-to-python :int "c_int")
+(define-type-to-python :unsigned-int "c_uint")
+(define-type-to-python :string "c_char_p")
+(define-type-to-python :bool "c_bool")
+(define-type-to-python :float "c_float")
+(define-type-to-python :double "c_double")
+;; Default to the C name otherwise
+(defmethod python-type (lisp-name) (c-type lisp-name))
 
 (sb-alien:define-alien-type :int sb-alien:int)
 (sb-alien:define-alien-type :unsigned-int sb-alien:unsigned-int)
@@ -24,6 +38,10 @@
 ;; Given a Lisp name denoting an alien type, return C code that will
 ;; define the type appropriately.
 (defgeneric type-definition (lisp-name))
+
+;; Given a Lisp name denoting an alien type, return Python code that
+;; will define the type appropriately.
+(defgeneric python-type-definition (lisp-name))
 
 ;; Given a Lisp form, wrap code mapping signalled Lisp conditions to
 ;; C-style return values around FORM using the given ERROR-MAP.
@@ -40,6 +58,8 @@
        (define-type-to-c ,type-name ,c-type-name)
        (defmethod type-definition ((,lisp-name (eql ',type-name)))
          ,(format nil "typedef void* ~a;" c-type-name))
+       (defmethod python-type-definition ((,lisp-name (eql ',type-name)))
+         ,(format nil "class ~a(c_void_p):~%    pass~%~%" c-type-name))
        (defmethod wrap-argument-form (argument-form (type (eql ',type-name)))
          `(dereference-handle ,argument-form))
        (defmethod wrap-result-form (result-form (type (eql ',type-name)))
@@ -53,6 +73,11 @@
        (defmethod c-type ((,lisp-name (eql ',type-name))) ,c-type-name)
        (defmethod type-definition ((,lisp-name (eql ',type-name)))
          ,(format nil "typedef enum { ~:{~a = ~d, ~}} ~a;" enums c-type-name))
+       (defmethod python-type-definition ((,lisp-name (eql ',type-name)))
+         ,(format nil "class ~a(int):~%    _map = {~%~{~a~%~}    }~%~%"
+                  c-type-name
+                  (loop for (name code) in enums
+                        collect (format nil "        ~D: ~S," code name))))
        ;; note: we could define this type as an alien enum, but
        ;; there's no reason to bother.
        (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -153,7 +178,37 @@
                    (output (function-declaration nil function-prefix name result-type typed-lambda-list error-map)))))))))
       (nreverse forms))))
 
+(defun python-emitter-from-specs (stream lib function-prefix error-map specs)
+  (let ((forms '()))
+    (flet ((output (string)
+             (push `(format ,stream ,string) forms)
+             (push `(terpri ,stream) forms)))
+      (dolist (spec specs)
+        (destructuring-bind (kind &rest things) spec
+          (case kind
+            (:type
+             (dolist (type things)
+               (output (python-type-definition type))))
+            (:function
+             (dolist (spec things)
+               (destructuring-bind (name result-type typed-lambda-list)
+                   spec
+                 (let ((exported-name (concatenate 'string function-prefix (lisp-to-c-name name))))
+                   (output (format nil
+                                   "~a = CFUNCTYPE(~a, ~{~a, ~}~a)(c_void_p.in_dll(~a, '~a').value)"
+                                   exported-name
+                                   (python-type (error-map-type error-map))
+                                   (mapcar #'python-type
+                                           (mapcar #'second typed-lambda-list))
+                                   (if (eq result-type :void)
+                                       ""
+                                       (format nil "POINTER(~a)" (python-type result-type)))
+                                   lib
+                                   exported-name))))))))))
+    (nreverse forms)))
+
 (defmacro define-library (name (&key bindings-generator
+                                     python-generator
                                      core-generator
                                      error-map
                                      (function-prefix ""))
@@ -184,6 +239,31 @@
                  (format stream
                          "int ~ainit() { return initialize_lisp(4, init_args); }~%"
                          ,function-prefix)))))
+       ,(when python-generator
+          (let ((python-name (concatenate 'string c-name ".py")))
+            `(defun ,python-generator (directory)
+               (with-open-file (stream (merge-pathnames ,python-name directory)
+                                       :direction :output
+                                       :if-exists :supersede)
+                 (format stream "from ctypes import *~%")
+                 (format stream "from pathlib import Path~%")
+                 (format stream "import platform~%~%")
+
+                 (format stream "if platform.system() == 'Windows':~%")
+                 (format stream "    libname = '~a.dll'~%" ,c-name)
+                 (format stream "elif platform.system() == 'Darwin':~%")
+                 (format stream "    libname = '~a.dylib'~%" ,c-name)
+                 (format stream "else:~%")
+                 (format stream "    raise Exception(f'Unexpected platform {platform.system()}')~%~%")
+
+                 (format stream "~a = CDLL(libname, mode=RTLD_GLOBAL)~%~%" ,c-name)
+                 (format stream "~a.~ainit()~%" ,c-name ,function-prefix)
+
+                 ,@(python-emitter-from-specs 'stream c-name function-prefix error-map specs)
+
+                 (format stream "~arelease_handle = CFUNCTYPE(None, c_void_p)(c_void_p.in_dll(~a, 'release_handle').value)"
+                         ,function-prefix
+                         ,c-name)))))
        ,(when core-generator
           (let ((callable-exports '(release-handle)))
             (dolist (spec specs)

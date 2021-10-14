@@ -48,9 +48,17 @@
 (defgeneric wrap-error-handling (form error-map))
 
 ;; Wrap an argument with code appropriate to its type.
-(defgeneric wrap-argument-form (argument-form type) (:method (argument-form type) argument-form))
+(defgeneric wrap-argument-form (argument-form type)
+  (:method (argument-form type)
+    argument-form)
+  (:method (argument-form (type (eql ':bool)))
+    `(not (zerop ,argument-form))))
 ;; Wrap a result with code appropriate to its type.
-(defgeneric wrap-result-form (result-form type) (:method (result-form type) result-form))
+(defgeneric wrap-result-form (result-form type)
+  (:method (result-form type)
+    result-form)
+  (:method (result-form (type (eql ':bool)))
+    `(if ,result-form 1 0)))
 
 (defmacro define-handle-type (type-name c-type-name)
   (let ((lisp-name (gensym "LISP-NAME")))

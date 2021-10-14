@@ -98,7 +98,9 @@
        `(handler-case (progn ,form ,,no-error)
           ,',@cases))
      (defmethod error-map-type ((error-map (eql ',name)))
-       ',error-type)))
+       ',error-type)
+     (defmethod error-map-success-code ((error-map (eql ',name)))
+       ,no-error)))
 
 (defun c-to-lisp-name (c-name)
   (nsubstitute #\- #\_ (string-upcase c-name)))
@@ -203,7 +205,7 @@
                    spec
                  (let ((exported-name (concatenate 'string function-prefix (lisp-to-c-name name))))
                    (output (format nil
-                                   "~a = CFUNCTYPE(~a, ~{~a, ~}~a)(c_void_p.in_dll(~a, '~a').value)"
+                                   "~a = _lift_errors(CFUNCTYPE(~a, ~{~a, ~}~a)(c_void_p.in_dll(~a, '~a').value))"
                                    exported-name
                                    (python-type (error-map-type error-map))
                                    (mapcar #'python-type
@@ -265,7 +267,15 @@
                  (format stream "    raise Exception(f'Unexpected platform {platform.system()}')~%~%")
 
                  (format stream "~a = CDLL(libname, mode=RTLD_GLOBAL)~%~%" ,c-name)
-                 (format stream "~a.~ainit()~%" ,c-name ,function-prefix)
+                 (format stream "~a.~ainit()~%~%" ,c-name ,function-prefix)
+
+                 (format stream "def _lift_errors(fn):~%")
+                 (format stream "    def _fn(*args, **kwargs):~%")
+                 (format stream "        res = fn(*args, **kwargs)~%")
+                 (format stream "        if res != ~d:~%" ,(error-map-success-code error-map))
+                 (format stream "            raise Exception(f'~A error: {~A._map[res]}')~%" ,c-name ,(c-type (error-map-type error-map)))
+                 (format stream "        return res~%~%")
+                 (format stream "    return _fn~%~%~%")
 
                  ,@(python-emitter-from-specs 'stream c-name function-prefix error-map specs)
 

@@ -189,7 +189,8 @@
       (nreverse forms))))
 
 (defun python-emitter-from-specs (stream lib function-prefix error-map specs)
-  (let ((forms '()))
+  (let ((forms '())
+        (exported-names '()))
     (flet ((output (string)
              (push `(format ,stream ,string) forms)
              (push `(terpri ,stream) forms)))
@@ -198,14 +199,16 @@
           (case kind
             (:type
              (dolist (type things)
+               (push (c-type type) exported-names)
                (output (python-type-definition type))))
             (:function
              (dolist (spec things)
                (destructuring-bind (name result-type typed-lambda-list)
                    spec
                  (let ((exported-name (concatenate 'string function-prefix (lisp-to-c-name name))))
+                   (push exported-name exported-names)
                    (output (format nil
-                                   "~a = _lift_errors(CFUNCTYPE(~a, ~{~a, ~}~a)(c_void_p.in_dll(~a, '~a').value))"
+                                   "~a = CFUNCTYPE(~a, ~{~a, ~}~a)(c_void_p.in_dll(~a, '~a').value)"
                                    exported-name
                                    (python-type (error-map-type error-map))
                                    (mapcar #'python-type
@@ -214,8 +217,13 @@
                                        ""
                                        (format nil "POINTER(~a)" (python-type result-type)))
                                    lib
-                                   exported-name))))))))))
-    (nreverse forms)))
+                                   exported-name)))))))))
+      (push (format nil "~arelease_handle" function-prefix) exported-names)
+      (push (format nil "~ahandle_eq" function-prefix) exported-names)
+      (setf forms (nreverse forms)
+            exported-names (nreverse exported-names))
+      (output (format nil "__all__ = [~{'~a'~^, ~}]~%~%" exported-names))
+      forms)))
 
 (defmacro define-library (name (&key bindings-generator
                                      python-generator
@@ -265,14 +273,6 @@
 
                  (format stream "~a = CDLL(libpath, mode=RTLD_GLOBAL)~%~%" ,c-name)
                  (format stream "~a.~ainit(str(libpath.parent / '~a.core').encode('utf-8'))~%~%" ,c-name ,function-prefix ,c-name)
-
-                 (format stream "def _lift_errors(fn):~%")
-                 (format stream "    def _fn(*args, **kwargs):~%")
-                 (format stream "        res = fn(*args, **kwargs)~%")
-                 (format stream "        if res != ~d:~%" ,(error-map-success-code error-map))
-                 (format stream "            raise Exception(f'~A error: {~A._map[res]}')~%" ,c-name ,(c-type (error-map-type error-map)))
-                 (format stream "        return res~%~%")
-                 (format stream "    return _fn~%~%~%")
 
                  ,@(python-emitter-from-specs 'stream c-name function-prefix error-map specs)
 

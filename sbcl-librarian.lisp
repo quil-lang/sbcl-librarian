@@ -243,6 +243,7 @@
                  (format stream "#include ~s~%" ,header-name)
                  ,@(source-emitter-from-specs 'stream function-prefix error-map specs)
                  (format stream "void (*release_handle)(void *handle);~%")
+                 (format stream "int (*handle_eq)(void *a, void *b);~%")
                  (format stream "extern int initialize_lisp(int argc, char **argv);~%")
                  (format stream "static char *init_args[] = {\"\", \"--core\", \"~a\", \"--noinform\"};~%"
                          ,core-name)
@@ -279,11 +280,14 @@
 
                  ,@(python-emitter-from-specs 'stream c-name function-prefix error-map specs)
 
+                 (format stream "~ahandle_eq = CFUNCTYPE(c_bool, c_void_p, c_void_p)(c_void_p.in_dll(~a, 'handle_eq').value)~%"
+                         ,function-prefix
+                         ,c-name)
                  (format stream "~arelease_handle = CFUNCTYPE(None, c_void_p)(c_void_p.in_dll(~a, 'release_handle').value)"
                          ,function-prefix
                          ,c-name)))))
        ,(when core-generator
-          (let ((callable-exports '(release-handle)))
+          (let ((callable-exports '(release-handle handle-eq)))
             (dolist (spec specs)
               (destructuring-bind (kind &rest things) spec
                 (when (eq kind :function)

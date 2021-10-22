@@ -48,9 +48,17 @@
 (defgeneric wrap-error-handling (form error-map))
 
 ;; Wrap an argument with code appropriate to its type.
-(defgeneric wrap-argument-form (argument-form type) (:method (argument-form type) argument-form))
+(defgeneric wrap-argument-form (argument-form type)
+  (:method (argument-form type)
+    argument-form)
+  (:method (argument-form (type (eql ':bool)))
+    `(not (zerop ,argument-form))))
 ;; Wrap a result with code appropriate to its type.
-(defgeneric wrap-result-form (result-form type) (:method (result-form type) result-form))
+(defgeneric wrap-result-form (result-form type)
+  (:method (result-form type)
+    result-form)
+  (:method (result-form (type (eql ':bool)))
+    `(if ,result-form 1 0)))
 
 (defmacro define-handle-type (type-name c-type-name)
   (let ((lisp-name (gensym "LISP-NAME")))
@@ -90,7 +98,9 @@
        `(handler-case (progn ,form ,,no-error)
           ,',@cases))
      (defmethod error-map-type ((error-map (eql ',name)))
-       ',error-type)))
+       ',error-type)
+     (defmethod error-map-success-code ((error-map (eql ',name)))
+       ,no-error)))
 
 (defun c-to-lisp-name (c-name)
   (nsubstitute #\- #\_ (string-upcase c-name)))
@@ -179,7 +189,8 @@
       (nreverse forms))))
 
 (defun python-emitter-from-specs (stream lib function-prefix error-map specs)
-  (let ((forms '()))
+  (let ((forms '())
+        (exported-names '()))
     (flet ((output (string)
              (push `(format ,stream ,string) forms)
              (push `(terpri ,stream) forms)))
@@ -188,12 +199,14 @@
           (case kind
             (:type
              (dolist (type things)
+               (push (c-type type) exported-names)
                (output (python-type-definition type))))
             (:function
              (dolist (spec things)
                (destructuring-bind (name result-type typed-lambda-list)
                    spec
                  (let ((exported-name (concatenate 'string function-prefix (lisp-to-c-name name))))
+                   (push exported-name exported-names)
                    (output (format nil
                                    "~a = CFUNCTYPE(~a, ~{~a, ~}~a)(c_void_p.in_dll(~a, '~a').value)"
                                    exported-name
@@ -204,8 +217,13 @@
                                        ""
                                        (format nil "POINTER(~a)" (python-type result-type)))
                                    lib
-                                   exported-name))))))))))
-    (nreverse forms)))
+                                   exported-name)))))))))
+      (push (format nil "~arelease_handle" function-prefix) exported-names)
+      (push (format nil "~ahandle_eq" function-prefix) exported-names)
+      (setf forms (nreverse forms)
+            exported-names (nreverse exported-names))
+      (output (format nil "__all__ = [~{'~a'~^, ~}]~%~%" exported-names))
+      forms)))
 
 (defmacro define-library (name (&key bindings-generator
                                      python-generator
@@ -233,12 +251,11 @@
                  (format stream "#include ~s~%" ,header-name)
                  ,@(source-emitter-from-specs 'stream function-prefix error-map specs)
                  (format stream "void (*release_handle)(void *handle);~%")
+                 (format stream "int (*handle_eq)(void *a, void *b);~%")
                  (format stream "extern int initialize_lisp(int argc, char **argv);~%")
-                 (format stream "static char *init_args[] = {\"\", \"--core\", \"~a\", \"--noinform\"};~%"
-                         ,core-name)
-                 (format stream
-                         "int ~ainit() { return initialize_lisp(4, init_args); }~%"
-                         ,function-prefix)))))
+                 (format stream "int ~ainit(char *core) {~%" ,function-prefix)
+                 (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\"};~%")
+                 (format stream "  return initialize_lisp(4, init_args); }~%")))))
        ,(when python-generator
           (let ((python-name (concatenate 'string c-name ".py")))
             `(defun ,python-generator (directory)
@@ -246,26 +263,27 @@
                                        :direction :output
                                        :if-exists :supersede)
                  (format stream "from ctypes import *~%")
+                 (format stream "from ctypes.util import find_library~%")
                  (format stream "from pathlib import Path~%")
-                 (format stream "import platform~%~%")
 
-                 (format stream "if platform.system() == 'Windows':~%")
-                 (format stream "    libname = '~a.dll'~%" ,c-name)
-                 (format stream "elif platform.system() == 'Darwin':~%")
-                 (format stream "    libname = '~a.dylib'~%" ,c-name)
-                 (format stream "else:~%")
-                 (format stream "    raise Exception(f'Unexpected platform {platform.system()}')~%~%")
+                 (format stream "try:~%")
+                 (format stream "    libpath = Path(find_library('~a'))~%" ,c-name)
+                 (format stream "except TypeError as e:~%")
+                 (format stream "    raise Exception('Unable to locate ~a') from e~%~%" ,c-name)
 
-                 (format stream "~a = CDLL(libname, mode=RTLD_GLOBAL)~%~%" ,c-name)
-                 (format stream "~a.~ainit()~%" ,c-name ,function-prefix)
+                 (format stream "~a = CDLL(libpath, mode=RTLD_GLOBAL)~%~%" ,c-name)
+                 (format stream "~a.~ainit(str(libpath.parent / '~a.core').encode('utf-8'))~%~%" ,c-name ,function-prefix ,c-name)
 
                  ,@(python-emitter-from-specs 'stream c-name function-prefix error-map specs)
 
+                 (format stream "~ahandle_eq = CFUNCTYPE(c_bool, c_void_p, c_void_p)(c_void_p.in_dll(~a, 'handle_eq').value)~%"
+                         ,function-prefix
+                         ,c-name)
                  (format stream "~arelease_handle = CFUNCTYPE(None, c_void_p)(c_void_p.in_dll(~a, 'release_handle').value)"
                          ,function-prefix
                          ,c-name)))))
        ,(when core-generator
-          (let ((callable-exports '(release-handle)))
+          (let ((callable-exports '(release-handle handle-eq)))
             (dolist (spec specs)
               (destructuring-bind (kind &rest things) spec
                 (when (eq kind :function)

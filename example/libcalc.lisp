@@ -1,3 +1,7 @@
+(require '#:asdf)
+
+(asdf:load-system '#:sbcl-librarian)
+
 (in-package #:sbcl-librarian-example)
 
 (defclass expression ()

@@ -1,10 +1,10 @@
 # sbcl-librarian
-Opinionated interface (based on ECL-SIMPLELIB) for creating shared
-libraries. Requires SBCL version >2.1.9.
+Opinionated interface for creating shared libraries. Requires SBCL
+version >2.1.10.
 
 After loading this system, you can build the example library like this:
 
-`sbcl --eval "(progn (ql:quickload :sbcl-librarian) (load \"example.lisp\"))"`
+`sbcl --eval "(progn (asdf:load-system :sbcl-librarian) (load \"example.lisp\"))"`
 
 which produces a header file, a source file, and a core file, and then you can compile the artifacts like so with:
 

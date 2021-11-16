@@ -225,6 +225,20 @@
       (output (format nil "__all__ = [~{'~a'~^, ~}]~%~%" exported-names))
       forms)))
 
+(defun python-write-default-header (stream &key c-name function-prefix)
+  (format stream "import os~%")
+  (format stream "from ctypes import *~%")
+  (format stream "from ctypes.util import find_library~%")
+  (format stream "from pathlib import Path~%")
+
+  (format stream "try:~%")
+  (format stream "    libpath = Path(find_library('~a')).resolve()~%" c-name)
+  (format stream "except TypeError as e:~%")
+  (format stream "    raise Exception('Unable to locate ~a') from e~%~%" c-name)
+
+  (format stream "~a = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" c-name)
+  (format stream "~a.~ainit(str(libpath.parent / '~a.core').encode('utf-8'))~%~%" c-name function-prefix c-name))
+
 (defmacro define-library (name (&key bindings-generator
                                      python-generator
                                      core-generator
@@ -254,25 +268,15 @@
                  (format stream "int (*handle_eq)(void *a, void *b);~%")
                  (format stream "extern int initialize_lisp(int argc, char **argv);~%")
                  (format stream "int ~ainit(char *core) {~%" ,function-prefix)
-                 (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\"};~%")
-                 (format stream "  return initialize_lisp(4, init_args); }~%")))))
+                 (format stream "  char *init_args[] = {\"\", \"--core\", core};~%")
+                 (format stream "  return initialize_lisp(3, init_args); }~%")))))
        ,(when python-generator
           (let ((python-name (concatenate 'string c-name ".py")))
-            `(defun ,python-generator (directory)
+            `(defun ,python-generator (directory &key (write-header 'python-write-default-header))
                (with-open-file (stream (merge-pathnames ,python-name directory)
                                        :direction :output
                                        :if-exists :supersede)
-                 (format stream "from ctypes import *~%")
-                 (format stream "from ctypes.util import find_library~%")
-                 (format stream "from pathlib import Path~%")
-
-                 (format stream "try:~%")
-                 (format stream "    libpath = Path(find_library('~a'))~%" ,c-name)
-                 (format stream "except TypeError as e:~%")
-                 (format stream "    raise Exception('Unable to locate ~a') from e~%~%" ,c-name)
-
-                 (format stream "~a = CDLL(libpath, mode=RTLD_GLOBAL)~%~%" ,c-name)
-                 (format stream "~a.~ainit(str(libpath.parent / '~a.core').encode('utf-8'))~%~%" ,c-name ,function-prefix ,c-name)
+                 (funcall write-header stream :c-name ,c-name :function-prefix ,function-prefix)
 
                  ,@(python-emitter-from-specs 'stream c-name function-prefix error-map specs)
 

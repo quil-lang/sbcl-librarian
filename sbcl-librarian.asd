@@ -8,4 +8,9 @@
   :serial t
   :components ((:file "package")
                (:file "handles")
-               (:file "sbcl-librarian")))
+               (:file "types")
+               (:file "function")
+               (:file "api")
+               (:file "library")
+               (:file "bindings")
+               (:file "python-bindings")))

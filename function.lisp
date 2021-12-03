@@ -1,0 +1,80 @@
+(in-package #:sbcl-librarian)
+
+(defun canonical-signature (name result-type typed-lambda-list &key
+                                                                 (function-prefix "")
+                                                                 error-map)
+  (let* ((callable-name
+           (intern
+            (concatenate 'string
+                         (c-to-lisp-name function-prefix)
+                         (symbol-name name))
+            (symbol-package name)))
+         (return-type
+           (if error-map
+               (error-map-type error-map)
+               result-type))
+         (use-result-arg
+           (and error-map
+                (not (eq result-type ':void)))))
+    (values callable-name
+            return-type
+            typed-lambda-list
+            (and use-result-arg result-type))))
+
+(defun c-function-declaration (name result-type typed-lambda-list &key
+                                                                    (datap 't)
+                                                                    (linkage nil)
+                                                                    (function-prefix "")
+                                                                    error-map)
+  (multiple-value-bind (callable-name return-type typed-lambda-list result-type)
+      (canonical-signature name result-type typed-lambda-list
+                           :function-prefix function-prefix
+                           :error-map error-map)    
+    (format nil "~@[~a ~]~a ~:[~a~;(*~a)~](~{~a~^, ~})"
+            linkage
+            (c-type return-type)
+            datap
+            (lisp-to-c-name callable-name)
+            (append
+             (mapcar (lambda (item)
+                       (destructuring-bind (name type)
+                           item
+                         (format nil "~a ~a" (c-type type) (lisp-to-c-name name))))
+                     typed-lambda-list)
+             (and result-type
+                  (list (format nil "~a *result" (c-type result-type))))))))
+
+(defun callable-definition (name result-type typed-lambda-list &key
+                                                                 (function-prefix "")
+                                                                 error-map)
+  (let ((bindings
+          (mapcar (lambda (item)
+                    (destructuring-bind (arg type)
+                        item
+                      (list (gensym)
+                            (funcall (alien-to-lisp type) arg))))
+                  typed-lambda-list)))
+    (multiple-value-bind (callable-name return-type typed-lambda-list result-type)
+        (canonical-signature name
+                             result-type
+                             typed-lambda-list
+                             :function-prefix function-prefix
+                             :error-map error-map)
+      `(sb-alien:define-alien-callable
+           ,callable-name
+           ,(sb-alien-type return-type)
+           (,@(loop :for (arg type) :in typed-lambda-list
+                    :collect (list arg (sb-alien-type type)))
+            ,@(when result-type
+                `((result (* ,(sb-alien-type result-type))))))
+         (let ,bindings
+           ,(let* ((wrapped
+                     (funcall (lisp-to-alien (or result-type return-type))
+                              `(,name ,@(mapcar #'first bindings))))
+                   (result
+                     (if result-type
+                         `(setf (sb-alien:deref result) ,wrapped)
+                         wrapped)))
+              (if error-map
+                  (wrap-error-handling result error-map)
+                  result)))))))

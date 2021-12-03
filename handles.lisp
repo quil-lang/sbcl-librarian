@@ -26,9 +26,3 @@
 
 (defun handle-eq (handle-a handle-b)
   (eq (dereference-handle handle-a) (dereference-handle handle-b)))
-
-(sb-alien:define-alien-callable release-handle sb-alien:void ((handle (* t)))
-  (release-handle handle))
-
-(sb-alien:define-alien-callable handle-eq sb-alien:int ((a (* t)) (b (* t)))
-  (if (handle-eq a b) 1 0))

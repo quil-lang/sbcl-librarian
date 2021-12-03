@@ -5,7 +5,12 @@
   (:export #:define-handle-type
            #:define-enum-type
            #:define-error-map
-           #:define-library))
+           #:define-api
+           #:define-library
+           #:define-aggregate-library
+           #:build-bindings
+           #:build-python-bindings
+           #:build-core-and-die
 
-(defpackage #:sbcl-librarian-example
-  (:use #:cl #:sbcl-librarian))
+           #:*standard-boilerplate*))
+

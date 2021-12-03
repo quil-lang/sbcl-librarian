@@ -2,6 +2,9 @@
 
 (asdf:load-system '#:sbcl-librarian)
 
+(defpackage #:sbcl-librarian-example
+  (:use #:cl #:sbcl-librarian))
+
 (in-package #:sbcl-librarian-example)
 
 (defclass expression ()
@@ -97,12 +100,8 @@
   (t (condition) (declare (ignore condition)) 1))
 
 (define-library libcalc (:error-map error-map
-                         :function-prefix "calc_"
-                         :bindings-generator build-libcalc-bindings
-                         :core-generator save-libcalc-core)
-  (:literal
-   "#ifndef _libcalc_h"
-   "#define _libcalc_h")
+                         :function-linkage "CALC_API"
+                         :function-prefix "calc_")
   (:literal "/* types */")
   (:type expr-type error-type)
   (:literal "/* functions */")
@@ -116,9 +115,9 @@
    (sum-expression-p :bool ((expr expr-type)))
    (simplify expr-type ((expr expr-type)))
    (parse expr-type ((source :string)))
-   (expression-to-string :string ((expr expr-type))))
-  (:literal "#endif"))
+   (expression-to-string :string ((expr expr-type)))))
 
-;; produce artifacts
-(build-libcalc-bindings *load-pathname*)
-(save-libcalc-core *load-pathname*)
+
+(build-bindings libcalc ".")
+(build-python-bindings libcalc ".")
+(build-core-and-die libcalc ".")

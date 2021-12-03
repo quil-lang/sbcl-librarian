@@ -8,7 +8,7 @@ void die(char *msg) {
 }
 
 int main(int argc, char **argv) {
-  calc_init();
+  init("libcalc.core");
 
   char source[256];
   printf("> ");
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 
   printf("\n%s\n", result);
 
-  release_handle(expr);
-  release_handle(simplified_expr);
+  calc_release_handle(expr);
+  calc_release_handle(simplified_expr);
   return 0;
 }

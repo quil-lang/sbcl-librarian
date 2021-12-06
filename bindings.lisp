@@ -1,5 +1,33 @@
 (in-package #:sbcl-librarian)
 
+(defparameter *windows-export-linkage*
+  "__declspec(dllexport)")
+
+(defparameter *windows-import-linkage*
+  "__declspec(dllimport)")
+
+(defparameter *elf-export-linkage*
+  "__attribute__ ((visibility (\"default\")))")
+
+(defun write-linkage-macro (linkage build-name stream)
+  (let ((windows "_WIN64")
+        (elf "__ELF__"))
+    (format stream "#if defined(~A)~%" build-name)
+    (format stream "#  if defined(~A)~%" windows)
+    (format stream "#    define ~A ~A~%" linkage *windows-export-linkage*)
+    (format stream "#  elif defined(~A)~%" elf)
+    (format stream "#    define ~A ~A~%" linkage *elf-export-linkage*)
+    (format stream "#  else~%")
+    (format stream "#    define ~A~%" linkage)
+    (format stream "# endif~%")
+    (format stream "#else~%")
+    (format stream "#  if defined(~A)~%" windows)
+    (format stream "#    define ~A ~A~%" linkage *windows-import-linkage*)
+    (format stream "#  else~%")
+    (format stream "#  define ~A~%" linkage)
+    (format stream "#  endif~%")
+    (format stream "#endif~%~%")))
+
 (defun write-api-to-header (api linkage stream)
   (labels ((fdecl (name result-type typed-lambda-list &optional (datap t))
              (c-function-declaration name result-type typed-lambda-list
@@ -23,25 +51,6 @@
                     (format stream "~A;~%"
                             (fdecl name result-type typed-lambda-list)))))))))
     (map nil #'write-spec (api-specs api))))
-
-(defun write-linkage-macro (linkage build-name stream)
-  (let ((windows "_WIN64")
-        (elf "__ELF__"))
-    (format stream "#if defined(~A)~%" build-name)
-    (format stream "#  if defined(~A)~%" windows)
-    (format stream "#    define ~A __declspec(dllexport)~%" linkage)
-    (format stream "#  elif defined(~A)~%" elf)
-    (format stream "#    define ~A __attribute__ ((visibility (\"default\")))~%" linkage)
-    (format stream "#  else~%")
-    (format stream "#    define ~A~%" linkage)
-    (format stream "# endif~%")
-    (format stream "#else~%")
-    (format stream "#  if defined(~A)~%" windows)
-    (format stream "#    define ~A __declspec(dllimport)~%" linkage)
-    (format stream "#  else~%")
-    (format stream "#  define ~A~%" linkage)
-    (format stream "#  endif~%")
-    (format stream "#endif~%~%")))
 
 (defun write-init-function (name linkage stream)
   (terpri stream)

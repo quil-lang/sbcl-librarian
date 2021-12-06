@@ -5,6 +5,13 @@
 (defgeneric error-map-type (error-map))
 
 (defmacro define-error-map (name error-type no-error &body cases)
+  "Define an error map with the indicated NAME. 
+
+Error maps control how Lisp errors get translated to error codes at exported function boundaries. There are three pieces involved:
+- ERROR-TYPE is the name of the error type to be returned,
+- NO-ERROR is the value to return in the absence of errors,
+- CASES are fragments of a HANDLER-CASE form (cf. the source).
+"
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (defmethod wrap-error-handling (form (error-map (eql ',name)))
        `(handler-case (progn ,form ,,no-error)
@@ -21,6 +28,9 @@
   (nsubstitute #\_ #\- (string-downcase (symbol-name lisp-name))))
 
 (defun callable-definitions-from-spec (function-prefix error-map specs)
+  "Generate ALIEN-CALLABLE definitions from the given SPEC.
+
+Prepends FUNCTION-PREFIX to generated function names, and wraps error handling according to ERROR-MAP."
   (nreverse
    (loop :for (kind . things) :in specs
          :when (eq kind ':function)
@@ -33,18 +43,24 @@
 
 (defclass api ()
   ((name :initarg :name
-         :accessor api-name)
+         :accessor api-name
+         :documentation "The Lisp-style name of the API (a symbol).")
    (error-map :initarg :error-map
-              :accessor api-error-map)
+              :accessor api-error-map
+              :documentation "An error map, used at the lisp<->alien boundary to translate conditions to ordinary return values.")
    (function-prefix :initarg :function-prefix
-                    :accessor api-function-prefix)
+                    :accessor api-function-prefix
+                    :documentation "A string prepended to all exported function names.")
    (specs :initarg :specs
-          :accessor api-specs))
-  (:documentation "TODO"))
+          :accessor api-specs
+          :documentation "A list of specifications."))
+  (:documentation "A specification of functions and types for export to a shared library."))
 
-(defmacro define-api (name (&key error-map
-                              (function-prefix ""))
-                      &body specs)  
+(defmacro define-api (name (&key error-map (function-prefix ""))
+                      &body specs)
+  "Define an API.
+
+In addition to constructing a suitable API object, this also ensures that alien callable definitions are defined."
   `(progn
      ,@(callable-definitions-from-spec function-prefix error-map specs)
      (defvar ,name
@@ -53,12 +69,6 @@
          :error-map ',error-map
          :function-prefix ,function-prefix
          :specs ',specs))))
-
-(defmacro export-api (api)
-  `(progn
-     ,@(callable-definitions-from-spec (api-function-prefix api)
-                                       (api-error-map api)
-                                       (api-specs api))))
 
 (defun exported-name (api name &key (lisp nil))
   (let ((c-name

@@ -104,6 +104,9 @@ Keyword Arguments
 ;;; some convenience type constructors
 
 (defmacro define-handle-type (name c-type)
+  "Define a handle type named NAME, using name C-TYPE in exported code.
+
+Handles serve roughly as opaque pointers to Lisp objects."
   `(define-type ,name
        :c-type ,c-type
        :alien-type (sb-alien:* t)
@@ -114,6 +117,9 @@ Keyword Arguments
        :alien-to-lisp (lambda (c) `(dereference-handle ,c))))
 
 (defmacro define-enum-type (name c-type &rest enums)
+  "Define an enum type named NAME, using name C-TYPE in exported code.
+
+Here ENUMS contains expressions of the form (<string> <int>), indicating that the C name given by <string> corresponds to an enum value <int>."
   `(define-type ,name
        :c-type ,c-type
        :alien-type sb-alien:int

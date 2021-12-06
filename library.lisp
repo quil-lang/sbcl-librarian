@@ -2,11 +2,15 @@
 
 (defclass library ()
   ((name :initarg :name
-         :accessor library-name)
+         :accessor library-name
+         :documentation "The Lisp-style name of the library (a symbol).")
    (function-linkage :initarg :function-linkage
-                     :accessor library-function-linkage)
+                     :accessor library-function-linkage
+                     :documentation "A string indicating a C-preprocessor macro used to control function linkage.")
    (apis :initarg :apis
-         :accessor library-apis)))
+         :accessor library-apis
+         :documentation "A list of APIs exported from the library."))
+  (:documentation "A specification of a library consisting of one more more exported APIs."))
 
 (defparameter *standard-boilerplate*
   `((:function
@@ -22,6 +26,11 @@
                                                 (string-upcase function-prefix)
                                                 "API")))
                           &body specs)
+  "Define a library exporting an API of interest.
+
+This is a convenience-macro, wrapping the more general DEFINE-AGGREGATE-LIBRARY.
+
+Here ERROR-MAP, FUNCTION-PREFIX, and SPECS identify the arguments of DEFINE-API with the same name. This API is constructed and marked for export from the resulting library. In addition, several 'standard' SBCL-LIBRARIAN functions (indicated by *STANDARD-BOILERPLATE*) are also packaged for export in a separate API."
   (let ((library-api (gensym "API"))
         (standard-boilerplate (gensym "API")))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -43,6 +52,9 @@
            ,standard-boilerplate)))))
 
 (defmacro define-aggregate-library (name (&key function-linkage) &body apis)
+  "Define a library exporting several APIs.
+
+NOTE: Here, the APIs must already be defined elsewhere."
   `(defvar ,name
      (make-instance 'library
        :name ',name

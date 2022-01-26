@@ -1,6 +1,7 @@
 #include "libcalc.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void die(char *msg) {
   printf("%s\n", msg);
@@ -21,7 +22,11 @@ int main(int argc, char **argv) {
   char *result;
 
   expr_type simplified_expr;
-  calc_simplify(expr, &simplified_expr);
+
+  if (argc == 2 && !strcmp(argv[1], "remove-zeros"))
+    calc_remove_zeros(expr, &simplified_expr);
+  else
+    calc_simplify(expr, &simplified_expr);
   
   if (calc_expression_to_string(simplified_expr, &result) != ERR_SUCCESS)
     die("unable to print expression to string");

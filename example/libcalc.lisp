@@ -90,6 +90,20 @@
     (make-instance 'int-literal
                    :value (%eval expr))))
 
+(defun remove-zeros (expr)
+  (labels ((%zerop (expr)
+             (and (int-literal-p expr)
+                  (zerop (int-literal-value expr)))))
+    (etypecase expr
+      (int-literal expr)
+      (sum-expression
+       (with-slots (left-arg right-arg) expr
+         (let ((simpl-left (remove-zeros left-arg))
+               (simpl-right (remove-zeros right-arg)))
+           (cond ((%zerop simpl-left) simpl-right)
+                 ((%zerop simpl-right) simpl-left)
+                 (t (sum-expression simpl-left simpl-right)))))))))
+
 ;;; Library definition.
 
 (define-handle-type expr-type "expr_type")
@@ -115,7 +129,8 @@
    (sum-expression-p :bool ((expr expr-type)))
    (simplify expr-type ((expr expr-type)))
    (parse expr-type ((source :string)))
-   (expression-to-string :string ((expr expr-type)))))
+   (expression-to-string :string ((expr expr-type)))
+   (remove-zeros expr-type ((expr expr-type)))))
 
 
 (build-bindings libcalc ".")

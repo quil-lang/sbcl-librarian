@@ -3,12 +3,7 @@
 (defun canonical-signature (name result-type typed-lambda-list &key
                                                                  (function-prefix "")
                                                                  error-map)
-  (let* ((callable-name
-           (intern
-            (concatenate 'string
-                         (c-to-lisp-name function-prefix)
-                         (symbol-name name))
-            (symbol-package name)))
+  (let* ((callable-name (prefix-name function-prefix name))
          (return-type
            (if error-map
                (error-map-type error-map)
@@ -34,7 +29,7 @@
             linkage
             (c-type return-type)
             datap
-            (lisp-to-c-name callable-name)
+            (coerce-to-c-name callable-name)
             (append
              (mapcar (lambda (item)
                        (destructuring-bind (name type)
@@ -70,7 +65,7 @@
          (let ,bindings
            ,(let* ((wrapped
                      (funcall (lisp-to-alien (or result-type return-type))
-                              `(,name ,@(mapcar #'first bindings))))
+                              `(,(if (listp name) (second name) name) ,@(mapcar #'first bindings))))
                    (result
                      (if result-type
                          `(setf (sb-alien:deref result) ,wrapped)

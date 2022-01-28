@@ -11,7 +11,7 @@
                            :error-map error-map)
     (format nil
             "~a = CFUNCTYPE(~a, ~{~a~^, ~})(c_void_p.in_dll(~a, '~a').value)"
-            (lisp-to-c-name callable-name)
+            (coerce-to-c-name callable-name)
             (python-type return-type)
             (append
              (loop :for (name type) :in typed-lambda-list
@@ -19,7 +19,7 @@
              (and result-type
                   (list (format nil "POINTER(~a)" (python-type result-type)))))
             library-name
-            (lisp-to-c-name callable-name))))
+            (coerce-to-c-name callable-name))))
 
 (defun write-default-python-header (library stream)
   (let ((name (library-c-name library)))
@@ -53,15 +53,14 @@
                                       :function-prefix (api-function-prefix api)
                                       :error-map (api-error-map api)
                                       :library-name library-name))
-                         :collect (exported-name api name))))))
+                         :collect (prefix-name (api-function-prefix api) name))))))
 
 (defun build-python-bindings (library directory)
   (let ((file-name (concatenate 'string (library-c-name library) ".py")))    
     (with-open-file (stream (merge-pathnames file-name directory)
                             :direction :output
                             :if-exists :supersede)
-      (funcall 'write-default-python-header library stream
-       )
+      (funcall 'write-default-python-header library stream)
       (let* ((api-exports 
                (loop :for api :in (library-apis library)
                      :append (write-api-to-python api (library-c-name library) stream))))

@@ -27,6 +27,12 @@ Error maps control how Lisp errors get translated to error codes at exported fun
 (defun lisp-to-c-name (lisp-name)
   (nsubstitute #\_ #\- (string-downcase (symbol-name lisp-name))))
 
+(defun coerce-to-c-name (name)
+  (typecase name
+    (list (car name))
+    (symbol (lisp-to-c-name name))
+    (string name)))
+
 (defun callable-definitions-from-spec (function-prefix error-map specs)
   "Generate ALIEN-CALLABLE definitions from the given SPEC.
 
@@ -70,14 +76,18 @@ In addition to constructing a suitable API object, this also ensures that alien 
          :function-prefix ,function-prefix
          :specs ',specs))))
 
-(defun exported-name (api name &key (lisp nil))
-  (let ((c-name
-          (concatenate 'string
-                       (api-function-prefix api)
-                       (lisp-to-c-name name))))
-    (if lisp
-        (c-to-lisp-name c-name)
-        c-name)))
-
-
-
+(defun prefix-name (prefix name)
+  "Prefix the generalized NAME with the string PREFIX."
+  (flet ((c-name (c-name)
+           (concatenate 'string prefix c-name))
+         (lisp-name (lisp-name)
+           (intern
+            (concatenate 'string
+                         (c-to-lisp-name prefix)
+                         (symbol-name lisp-name))
+            (symbol-package lisp-name))))
+    (etypecase name
+      (list (list (c-name (first name))
+                  (lisp-name (second name))))
+      (symbol (lisp-name name))
+      (string (c-name name)))))

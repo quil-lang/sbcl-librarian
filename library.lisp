@@ -74,8 +74,7 @@ NOTE: Here, the APIs must already be defined elsewhere."
     (loop :for (kind . things) :in (api-specs api)
           :when (eq kind ':function)
             :append (mapcar (lambda (spec)
-                              (intern (exported-name api (first spec) :lisp t)
-                                      (symbol-package (first spec))))
+                              (prefix-name (api-function-prefix api) (first spec)))
                             things))))
 
 (defun build-core-and-die (library directory)

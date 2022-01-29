@@ -53,7 +53,8 @@
                                       :function-prefix (api-function-prefix api)
                                       :error-map (api-error-map api)
                                       :library-name library-name))
-                         :collect (prefix-name (api-function-prefix api) name))))))
+                         :collect (let ((prefixed-name (prefix-name (api-function-prefix api) name)))
+                                    (if (listp prefixed-name) (car prefixed-name) prefixed-name)))))))
 
 (defun build-python-bindings (library directory)
   (let ((file-name (concatenate 'string (library-c-name library) ".py")))    

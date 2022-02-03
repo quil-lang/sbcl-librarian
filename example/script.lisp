@@ -1,6 +1,6 @@
 (require '#:asdf)
 
-(asdf:load-system '#:sbcl-librarian/example/libcalc)
+(asdf:load-system '#:libcalc)
 
 (build-bindings libcalc ".")
 (build-python-bindings libcalc ".")

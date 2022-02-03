@@ -1,5 +1,7 @@
 ;;; Library definition.
 
+(in-package #:sbcl-librarian/example/libcalc)
+
 (define-handle-type expr-type "expr_type")
 (define-enum-type error-type "err_t"
   ("ERR_SUCCESS" 0)

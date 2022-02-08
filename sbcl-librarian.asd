@@ -7,10 +7,11 @@
   ; :version "0.0.1"
   :serial t
   :components ((:file "package")
-               (:file "handles")
                (:file "types")
                (:file "function")
                (:file "api")
                (:file "library")
                (:file "bindings")
-               (:file "python-bindings")))
+               (:file "python-bindings")
+               (:file "handles")
+               (:file "loader")))

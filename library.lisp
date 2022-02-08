@@ -12,12 +12,6 @@
          :documentation "A list of APIs exported from the library."))
   (:documentation "A specification of a library consisting of one more more exported APIs."))
 
-(defparameter *standard-boilerplate*
-  `((:function
-      (release-handle :void ((handle :pointer)))
-      (handle-eq :bool ((a :pointer) (b :pointer)))))
-  "Standard routines for use with user-defined APIs.")
-
 (defmacro define-library (name (&key
                                   error-map
                                   (function-prefix "")
@@ -30,26 +24,18 @@
 
 This is a convenience-macro, wrapping the more general DEFINE-AGGREGATE-LIBRARY.
 
-Here ERROR-MAP, FUNCTION-PREFIX, and SPECS identify the arguments of DEFINE-API with the same name. This API is constructed and marked for export from the resulting library. In addition, several 'standard' SBCL-LIBRARIAN functions (indicated by *STANDARD-BOILERPLATE*) are also packaged for export in a separate API."
-  (let ((library-api (gensym "API"))
-        (standard-boilerplate (gensym "API")))
+Here ERROR-MAP, FUNCTION-PREFIX, and SPECS identify the arguments of DEFINE-API with the same name. This API is constructed and marked for export from the resulting library."
+  (let ((library-api (gensym "API")))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (let ((,standard-boilerplate (make-instance 'api
-                                      :name 'standard-boilerplate
-                                      :error-map nil
-                                      :function-prefix ,function-prefix
-                                      :specs ',*standard-boilerplate*))
-             (,library-api (make-instance 'api
+       (let ((,library-api (make-instance 'api
                              :name ',name
                              :error-map ',error-map
                              :function-prefix ,function-prefix
                              :specs ',specs)))
-         ,@(callable-definitions-from-spec function-prefix nil *standard-boilerplate*)
          ,@(callable-definitions-from-spec function-prefix error-map specs)
          (define-aggregate-library ,name
              (:function-linkage ,function-linkage)
-           ,library-api
-           ,standard-boilerplate)))))
+           ,library-api)))))
 
 (defmacro define-aggregate-library (name (&key function-linkage) &body apis)
   "Define a library exporting several APIs.

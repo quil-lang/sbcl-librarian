@@ -1,5 +1,9 @@
 (in-package #:sbcl-librarian)
 
+(defvar *initialize-callables-p* nil
+  "Bound to T when we are loading Lisp and want to reinitialize
+  callables on load.")
+
 (defun canonical-signature (name result-type typed-lambda-list &key
                                                                  (function-prefix "")
                                                                  error-map)
@@ -55,21 +59,24 @@
                              typed-lambda-list
                              :function-prefix function-prefix
                              :error-map error-map)
-      `(sb-alien:define-alien-callable
-           ,callable-name
-           ,(sb-alien-type return-type)
-           (,@(loop :for (arg type) :in typed-lambda-list
-                    :collect (list arg (sb-alien-type type)))
-            ,@(when result-type
-                `((result (* ,(sb-alien-type result-type))))))
-         (let ,bindings
-           ,(let* ((wrapped
-                     (funcall (lisp-to-alien (or result-type return-type))
-                              `(,(if (listp name) (second name) name) ,@(mapcar #'first bindings))))
-                   (result
-                     (if result-type
-                         `(setf (sb-alien:deref result) ,wrapped)
-                         wrapped)))
-              (if error-map
-                  (wrap-error-handling result error-map)
-                  result)))))))
+      `(progn
+         (sb-alien:define-alien-callable
+             ,callable-name
+             ,(sb-alien-type return-type)
+             (,@(loop :for (arg type) :in typed-lambda-list
+                      :collect (list arg (sb-alien-type type)))
+              ,@(when result-type
+                  `((result (* ,(sb-alien-type result-type))))))
+           (let ,bindings
+             ,(let* ((wrapped
+                       (funcall (lisp-to-alien (or result-type return-type))
+                                `(,(if (listp name) (second name) name) ,@(mapcar #'first bindings))))
+                     (result
+                       (if result-type
+                           `(setf (sb-alien:deref result) ,wrapped)
+                           wrapped)))
+                (if error-map
+                    (wrap-error-handling result error-map)
+                    result))))
+         (when *initialize-callables-p*
+           (sb-alien::initialize-alien-callable-symbol ',name))))))

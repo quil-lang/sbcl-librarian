@@ -12,5 +12,6 @@
            #:build-python-bindings
            #:build-core-and-die
 
-           #:*standard-boilerplate*))
+           #:loader
+           #:handles))
 

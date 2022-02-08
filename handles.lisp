@@ -26,3 +26,8 @@
 
 (defun handle-eq (handle-a handle-b)
   (eq (dereference-handle handle-a) (dereference-handle handle-b)))
+
+(define-api handles (:function-prefix "")
+  (:function
+   (lisp-release-handle :void ((handle :pointer)))
+   (lisp-handle-eq :bool ((a :pointer) (b :pointer)))))

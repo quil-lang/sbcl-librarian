@@ -29,5 +29,5 @@
 
 (define-api handles (:function-prefix "")
   (:function
-   (lisp-release-handle :void ((handle :pointer)))
-   (lisp-handle-eq :bool ((a :pointer) (b :pointer)))))
+   (("lisp_release_handle" release-handle) :void ((handle :pointer)))
+   (("lisp_handle_eq" handle-eq) :bool ((a :pointer) (b :pointer)))))

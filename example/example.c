@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
 
     printf("\n%s\n> ", result);
 
-    calc_release_handle(expr);
-    calc_release_handle(simplified_expr);
+    lisp_release_handle(expr);
+    lisp_release_handle(simplified_expr);
   }
 
   return 0;

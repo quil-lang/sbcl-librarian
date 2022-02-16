@@ -15,7 +15,7 @@ Error maps control how Lisp errors get translated to error codes at exported fun
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (defmethod wrap-error-handling (form (error-map (eql ',name)))
        `(handler-case (progn ,form ,,no-error)
-          ,',@cases))
+          ,,@(loop :for case :in cases :collect (list 'quote case))))
      (defmethod error-map-type ((error-map (eql ',name)))
        ',error-type)
      (defmethod error-map-success-code ((error-map (eql ',name)))

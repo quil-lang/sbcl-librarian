@@ -6,6 +6,7 @@
            #:define-enum-type
            #:define-error-map
            #:define-api
+           #:define-quick-api
            #:define-library
            #:define-aggregate-library
            #:build-bindings

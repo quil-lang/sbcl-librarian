@@ -110,7 +110,7 @@ Handles serve roughly as opaque pointers to Lisp objects."
   `(define-type ,name
        :c-type ,c-type
        :alien-type (sb-alien:* t)
-       :definition ,(format nil "typedef void* ~a;" c-type)
+       :definition ,(format nil "struct ~a__ { int unused; }; typedef struct ~:*~a__ *~:*~a;" c-type)
        :python-type ,c-type
        :python-type-definition ,(format nil "class ~a(c_void_p):~%    pass~%~%" c-type)
        :lisp-to-alien (lambda (c) `(make-handle ,c))

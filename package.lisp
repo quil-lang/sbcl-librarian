@@ -13,5 +13,6 @@
            #:build-core-and-die
 
            #:loader
-           #:handles))
+           #:handles
+           #:environment))
 

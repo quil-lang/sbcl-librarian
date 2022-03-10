@@ -14,4 +14,5 @@
                (:file "bindings")
                (:file "python-bindings")
                (:file "handles")
-               (:file "loader")))
+               (:file "loader")
+               (:file "environment")))

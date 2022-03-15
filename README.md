@@ -2,21 +2,39 @@
 Opinionated interface for creating shared libraries. Requires SBCL
 version >2.1.10.
 
-After loading this system, you can build the example library like this:
 
-`sbcl --eval "(progn (asdf:load-system :sbcl-librarian) (load \"libcalc.lisp\"))"`
+## Building the example
 
-which produces a header file, a source file, and a core file, and then you can compile the artifacts like so with:
+In the `example/` directory there is a full example shown. It is
+assumed sbcl-librarian is cloned in your local-projects directory so
+it is visible to asdf. For example if you are using roswell:
 
-`gcc -c -fpic libcalc.c`
+```
+$ cd ~/.roswell/local-projects/
+$ git clone https://github.com/quil-lang/sbcl-librarian
+```
 
-`gcc -shared libcalc.o -o libcalc.so -lsbcl`
+the user needs to have the SBCL shared library built. To do so one
+needs to run the `make-shared-libarary.sh` script. For roswell users
+(at tha time of writing the lates SBCL version is 2.2.2):
 
-`gcc example.c -o example -lsbcl -lcalc -L.`
 
-which creates a shared library and executable using the functions
-defined in the example system, assuming you have `libsbcl.so` and
-`libcalc.so` in a shared library path somewhere.
+```
+$ cd ~/.roswell/src/sbcl-2.2.2/
+$ ./make-shared-library.sh
+```
+
+Once that is done you are ready to build the example
+
+```
+$ make
+$ ./example
+> (+ 1 2)
+3
+```
+
+(in case there is a conflict related to build IDs see
+[issue](https://github.com/quil-lang/sbcl-librarian/issues/21#issuecomment-1068250667))
 
 NOTE: On Mac OS X you *MUST* specify `-pagezero_size 0x100000` when
 linking the final executable, otherwise SBCL will fail to mmap its

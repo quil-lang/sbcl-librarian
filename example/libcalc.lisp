@@ -27,21 +27,21 @@
 (defun sum-expression-p (obj)
   (typep obj 'sum-expression))
 
+(defun parse-expr (lisp-expr)
+  (cond ((integerp lisp-expr)
+         (make-instance 'int-literal :value lisp-expr))
+        ((and (listp lisp-expr) (eq '+ (first lisp-expr)))
+         (let* ((left (parse-expr (second lisp-expr)))
+                (right (parse-expr (third lisp-expr))))
+           (make-instance 'sum-expression
+                          :left left
+                          :right right)))
+        (t
+         (error "Unable to parse expression: ~A" lisp-expr))))
+
 (defun parse (source)
-  (labels ((parse-expr (lisp-expr)
-             (cond ((integerp lisp-expr)
-                    (make-instance 'int-literal :value lisp-expr))
-                   ((and (listp lisp-expr) (eq '+ (first lisp-expr)))
-                    (let* ((left (parse-expr (second lisp-expr)))
-                           (right (parse-expr (third lisp-expr))))
-                      (make-instance 'sum-expression
-                                     :left left
-                                     :right right)))
-                   (t
-                    (error "Unable to parse expression: ~A" lisp-expr)))))
-    (let ((*package* (find-package "SBCL-LIBRARIAN-EXAMPLE")))
-      (with-input-from-string (stream source)
-        (parse-expr (read stream))))))
+  (with-input-from-string (stream source)
+    (parse-expr (read stream))))
 
 (defparameter *print-expression-indent* 0)
 

@@ -33,6 +33,5 @@ if __name__ == '__main__':
         print(result.value.decode('utf-8'))
         print('')
 
-        libcalc.calc_release_handle(expr)
-        libcalc.calc_release_handle(simplified)
-
+        libcalc.lisp_release_handle(expr)
+        libcalc.lisp_release_handle(simplified)

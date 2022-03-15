@@ -35,7 +35,6 @@ Here ERROR-MAP, FUNCTION-PREFIX, and SPECS identify the arguments of DEFINE-API 
          ,@(callable-definitions-from-spec function-prefix error-map specs)
          (define-aggregate-library ,name
              (:function-linkage ,function-linkage)
-           handles
            ,library-api)))))
 
 (defmacro define-aggregate-library (name (&key function-linkage) &body apis)

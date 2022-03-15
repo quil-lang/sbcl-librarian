@@ -9,8 +9,7 @@
 (define-error-map error-map error-type 0
   (t (condition) (declare (ignore condition)) 1))
 
-(define-library libcalc (:error-map error-map
-                         :function-linkage "CALC_API"
+(define-api libcalc-api (:error-map error-map
                          :function-prefix "calc_")
   (:literal "/* types */")
   (:type expr-type error-type)
@@ -27,3 +26,7 @@
    (parse expr-type ((source :string)))
    (expression-to-string :string ((expr expr-type)))
    (remove-zeros expr-type ((expr expr-type)))))
+
+(define-aggregate-library libcalc (:function-linkage "CALC_API")
+  sbcl-librarian:handles sbcl-librarian:environment libcalc-api)
+

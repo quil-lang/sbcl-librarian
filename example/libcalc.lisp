@@ -39,7 +39,7 @@
                                      :right right)))
                    (t
                     (error "Unable to parse expression: ~A" lisp-expr)))))
-    (let ((*package* (find-package "SBCL-LIBRARIAN-EXAMPLE")))
+    (let ((*package* (find-package "SBCL-LIBRARIAN/EXAMPLE/LIBCALC")))
       (with-input-from-string (stream source)
         (parse-expr (read stream))))))
 

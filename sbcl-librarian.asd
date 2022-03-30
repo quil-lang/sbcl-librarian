@@ -6,6 +6,7 @@
   ; :license "TODO"
   ; :version "0.0.1"
   :serial t
+  :pathname "src/"
   :components ((:file "package")
                (:file "types")
                (:file "function")

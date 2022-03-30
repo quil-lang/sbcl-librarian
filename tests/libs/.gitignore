@@ -1,0 +1,5 @@
+*.dylib
+*.core
+*.c
+*.h
+*.py

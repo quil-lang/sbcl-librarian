@@ -4,7 +4,7 @@
 ;;; able to do some optimizations here like noticing that immediate
 ;;; objects like FIXNUMs are GC-safe and do not need to be coerced
 ;;; into handles.
-(defvar *handles* (vector (make-hash-table) 0))
+(defvar *handles* (vector (make-hash-table :synchronized t) 0))
 
 ;; coerce int key to void* handle
 (defun key-handle (key) (sb-alien:sap-alien (sb-int::int-sap key) (* t)))

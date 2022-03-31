@@ -4,18 +4,21 @@
 
 (defgeneric error-map-type (error-map))
 
-(defmacro define-error-map (name error-type no-error &body cases)
+(defmacro define-error-map (name error-type no-error bindings)
   "Define an error map with the indicated NAME. 
 
 Error maps control how Lisp errors get translated to error codes at exported function boundaries. There are three pieces involved:
 - ERROR-TYPE is the name of the error type to be returned,
 - NO-ERROR is the value to return in the absence of errors,
-- CASES are fragments of a HANDLER-CASE form (cf. the source).
-"
+- BINDINGS are bindings of an enclosing HANDLER-BIND form (cf. the source).
+
+All Lisp calls will get wrapped in a block named NAME, within which a HANDLER-BIND form is present. Error handlers may (RETURN-FROM <NAME> <ERROR-CODE>) to propagate errors."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (defmethod wrap-error-handling (form (error-map (eql ',name)))
-       `(handler-case (progn ,form ,,no-error)
-          ,,@(loop :for case :in cases :collect (list 'quote case))))
+       `(block ,',name
+          (handler-bind
+              ,',bindings
+            (progn ,form ,,no-error))))
      (defmethod error-map-type ((error-map (eql ',name)))
        ',error-type)
      (defmethod error-map-success-code ((error-map (eql ',name)))

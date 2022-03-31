@@ -1,6 +1,6 @@
 ;;; Library definition.
 
-(in-package #:sbcl-librarian/tests/libs/libsquare)
+(in-package #:sbcl-librarian.tests.libsquare)
 
 (define-enum-type error-type "err_t"
   ("ERR_SUCCESS" 0)

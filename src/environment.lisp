@@ -25,7 +25,7 @@
   (sb-ext:disable-debugger))
 
 (defun gc ()
-  (gc :full t))
+  (sb-ext:gc :full t))
 
 (define-api environment (:function-prefix "")
   (:function

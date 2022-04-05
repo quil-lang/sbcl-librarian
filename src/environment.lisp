@@ -24,7 +24,11 @@
 (defun disable-debugger ()
   (sb-ext:disable-debugger))
 
+(defun gc ()
+  (gc :full t))
+
 (define-api environment (:function-prefix "")
   (:function
    (("lisp_enable_debugger" enable-debugger) :void ())
-   (("lisp_disable_debugger" disable-debugger) :void ())))
+   (("lisp_disable_debugger" disable-debugger) :void ())
+   (("lisp_gc" gc) :void ())))

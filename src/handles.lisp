@@ -18,10 +18,16 @@
     (key-handle key)))
 
 (defun dereference-handle (handle)
-  (gethash (handle-key handle) (svref *handles* 0)))
+  (multiple-value-bind (object foundp)
+      (gethash (handle-key handle) (svref *handles* 0))
+    (unless foundp
+      (error "Use after free on handle ~d detected."
+             (handle-key handle)))
+    object))
 
 (defun release-handle (handle)
-  (remhash (handle-key handle) (svref *handles* 0))
+  (unless (remhash (handle-key handle) (svref *handles* 0))
+    (error "Double free on handle ~d detected." (handle-key handle)))
   (values))
 
 (defun handle-eq (handle-a handle-b)

@@ -29,28 +29,42 @@
     (format stream "#endif~%~%")))
 
 (defun write-api-to-header (api linkage stream)
-  (labels ((fdecl (name result-type typed-lambda-list &optional (datap t))
-             (c-function-declaration name result-type typed-lambda-list
-                                     :datap datap
-                                     :linkage linkage
-                                     :function-prefix (api-function-prefix api)
-                                     :error-map (api-error-map api)))
-           (write-spec (spec)
-             (destructuring-bind (kind &rest things) spec
-             (ecase kind
-               (:literal
-                (dolist (literal things)
-                  (format stream literal)
-                  (terpri stream)))
-               (:type
-                (dolist (type things)
-                  (write-line (type-definition type) stream)))
-               (:function
-                (dolist (spec things)
-                  (destructuring-bind (name result-type typed-lambda-list) spec
-                    (format stream "~A;~%"
-                            (fdecl name result-type typed-lambda-list)))))))))
-    (map nil #'write-spec (api-specs api))))
+  (dolist (spec (api-specs api))
+    (destructuring-bind (kind &rest things) spec
+      (ecase kind
+        (:literal
+         (dolist (literal things)
+           (format stream literal)
+           (terpri stream)))
+        (:type
+         (dolist (type things)
+           (write-line (type-definition type) stream)))
+        (:function
+         (dolist (spec things)
+           (destructuring-bind (name result-type typed-lambda-list) spec
+             (format stream "~A;~%"
+                     (c-function-declaration name result-type typed-lambda-list
+                                             :datap t
+                                             :linkage linkage
+                                             :externp t
+                                             :function-prefix (api-function-prefix api)
+                                             :error-map (api-error-map api))))))))))
+
+(defun write-api-to-source (api stream)
+  (dolist (spec (api-specs api))
+    (destructuring-bind (kind &rest things) spec
+      (ecase kind
+        (:literal)
+        (:type)
+        (:function
+         (dolist (spec things)
+           (destructuring-bind (name result-type typed-lambda-list) spec
+             (format stream "~A;~%"
+                     (c-function-declaration name result-type typed-lambda-list
+                                             :datap t
+                                             :externp nil
+                                             :function-prefix (api-function-prefix api)
+                                             :error-map (api-error-map api))))))))))
 
 (defun write-init-function (name linkage stream)
   (terpri stream)
@@ -91,4 +105,6 @@
                             :if-exists :supersede)
       (format stream "#define ~A~%~%" build-flag)
       (format stream "#include ~s~%~%" header-name)
+      (dolist (api (library-apis library))
+        (write-api-to-source api stream))
       (write-init-function 'init linkage stream))))

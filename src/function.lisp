@@ -20,16 +20,17 @@
             typed-lambda-list
             (and use-result-arg result-type))))
 
-(defun c-function-declaration (name result-type typed-lambda-list &key
-                                                                    (datap 't)
-                                                                    (linkage nil)
-                                                                    (function-prefix "")
-                                                                    error-map)
+(defun c-function-declaration (name result-type typed-lambda-list
+                               &key (datap 't) (externp nil)
+                                    (linkage nil)
+                                    (function-prefix "")
+                                    error-map)
   (multiple-value-bind (callable-name return-type typed-lambda-list result-type)
       (canonical-signature name result-type typed-lambda-list
                            :function-prefix function-prefix
                            :error-map error-map)    
-    (format nil "~@[~a ~]~a ~:[~a~;(*~a)~](~{~a~^, ~})"
+    (format nil "~:[~;extern ~]~@[~a ~]~a ~:[~a~;(*~a)~](~{~a~^, ~})"
+            externp
             linkage
             (c-type return-type)
             datap

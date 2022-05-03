@@ -1,0 +1,5 @@
+This subsystem implements machinery for measuring the overhead of
+the FFI boundary.
+
+Run =make= to build shared libraries, and then use =python suite.py=
+to get timing information.

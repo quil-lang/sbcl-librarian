@@ -10,6 +10,11 @@
 ;; translation overhead as well as the overhead of handles.
 (defun nil-function () nil)
 
+(defun string-function (string) (cons string nil))
+
+;; Testing overhead of identity function.
+(defun identity-function (x) (x))
+
 ;; Expose a generic lisp type.
 (define-handle-type lisp-type "lisp_type")
 
@@ -29,7 +34,9 @@
   (:literal "/* functions */")
   (:function
    (empty-function :void ())
-   (nil-function lisp-type ())))
+   (nil-function lisp-type ())
+   (string-function lisp-type ((string :string)))
+   (identity-function lisp-type ((x lisp-type)))))
 
 (define-aggregate-library benchmark (:function-linkage "BENCHMARK_API")
   sbcl-librarian:handles sbcl-librarian:environment benchmark-api)

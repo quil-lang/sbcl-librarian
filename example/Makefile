@@ -11,7 +11,7 @@ example: libsbcl.so libcalc.dylib
 # For some reason, even on OSX SBCL builds its library with *.so
 # extension, but this works!
 libsbcl.so: $(SBCL_SRC)
-	test ! -e $(SBCL_SRC)/src/runtime/libsbcl.so && cd $(SBCL_SRC) && ./make-shared-library.sh
+	test ! -e $(SBCL_SRC)/src/runtime/libsbcl.so && cd $(SBCL_SRC) && ./make-shared-library.sh || true
 	cp $(SBCL_SRC)/src/runtime/libsbcl.so ./
 
 libcalc.core libcalc.c libcalc.h libcalc.py: libcalc.lisp

@@ -4,21 +4,25 @@ version >2.1.10.
 
 You can build the example library using the Makefile in the example
 directory, which produces a header file, a source file, and a core
-file, and then you can compile the artifacts like so with:
+file
 
-`gcc -c -fpic libcalc.c`
+You can compile example like so with:
 
-`gcc -shared libcalc.o -o libcalc.so -lsbcl`
+```
+export SBCL_SRC=~/.roswell/src/sbcl-2.2.4
 
-`gcc example.c -o example -lsbcl -lcalc -L.`
+cd example
+make
+
+./example
+```
 
 which creates a shared library and executable using the functions
-defined in the example system, assuming you have `libsbcl.so` and
-`libcalc.so` in a shared library path somewhere.
+defined in the example system, assuming you have `libsbcl.so`
+in a `${SBCL_SRC}/src/runtime/`.
 
-If you don't have `libsbcl.so`, you can build it by cloning the sbcl
-sources and running `make-shared-library.sh`. Then the artifact will
-be in `src/runtime/`.
+If you don't have `libsbcl.so`, make will try to build it for you
+by calling `make-shared-library.sh` at `${SBCL_SRC}` directory.
 
 NOTE: On Intel Mac OS X you *MUST* specify `-pagezero_size 0x100000`
 when linking the final executable, otherwise SBCL will fail to mmap

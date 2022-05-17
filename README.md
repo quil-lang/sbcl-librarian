@@ -30,3 +30,17 @@ its static space into the address `0x5000000`. This is because Mac
 decides to make page zero take up a whole `4GB` (!), which prevents
 access to the 32-bit address space. (Ostensibly to prevent null
 pointer or other such bad (truncated?) pointer dereferences.)
+
+# Runtime notes
+The SBCL runtime includes a garbage collector and memory allocator.
+
+Process resources SBCL uses:
+- Signal handlers into the process for things like keyboard interrupts
+  (can be turned off). On some platforms this may also entail a
+  stop-the-world GC signal.
+- File descriptors like standard input and output.
+- A fixed address space somewhere in memory. On x86 (32-bit and
+  64-bit) this needs to be a fixed address space under 4 GB. This is
+  so the compiler can generate manifest literal addresses in machine
+  code on some platforms, as well as to compute stable hashes of
+  certain constants like NIL.

@@ -73,8 +73,12 @@
           (c-function-declaration name ':int '((core :string))
                                   :datap nil
                                   :linkage linkage))
+  (format stream "  static int initialized = 0;~%")
   (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\"};~%")
-  (format stream "  return initialize_lisp(4, init_args); }"))
+  (format stream "  if (initialized) return 1;~%")
+  (format stream "  if (initialize_lisp(4, init_args) != 0) return -1;~%")
+  (format stream "  initialized = 1;~%")
+  (format stream "  return 0; }"))
 
 (defun build-bindings (library directory)
   (let* ((c-name (library-c-name library))

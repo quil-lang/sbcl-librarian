@@ -21,6 +21,13 @@ which creates a shared library and executable using the functions
 defined in the example system, assuming you have `libsbcl.so`
 in a `${SBCL_SRC}/src/runtime/`.
 
+The file `add-on.lisp` in the example directory shows how to add new
+API symbols at link time - the final artifact should be relinked into
+the final executable either by static or dynamic linkage - things work
+better on Windows with static linkage. `add-on.fasl` should be loaded
+explicitly via the C function `lisp_load` or the Lisp function
+`lisp-load` at runtime.
+
 If you don't have `libsbcl.so`, make will try to build it for you
 by calling `make-shared-library.sh` at `${SBCL_SRC}` directory.
 

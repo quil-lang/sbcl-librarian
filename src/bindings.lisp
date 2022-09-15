@@ -80,7 +80,7 @@
   (format stream "  initialized = 1;~%")
   (format stream "  return 0; }"))
 
-(defun build-bindings (library directory)
+(defun build-bindings (library directory &key (omit-init-function nil))
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
@@ -98,10 +98,11 @@
         (write-linkage-macro linkage build-flag stream))
       (dolist (api (library-apis library))
         (write-api-to-header api linkage stream))
-      (format stream "~A;~%~%"
-              (c-function-declaration 'init ':int '((core :string))
-                                      :datap nil
-                                      :linkage linkage))
+      (unless omit-init-function
+        (format stream "~A;~%~%"
+                (c-function-declaration 'init ':int '((core :string))
+                                        :datap nil
+                                        :linkage linkage)))
       (format stream "#endif~%"))
     ;; source
     (with-open-file (stream (merge-pathnames source-name directory)
@@ -111,4 +112,5 @@
       (format stream "#include ~s~%~%" header-name)
       (dolist (api (library-apis library))
         (write-api-to-source api stream))
-      (write-init-function 'init linkage stream))))
+      (unless omit-init-function
+        (write-init-function 'init linkage stream)))))

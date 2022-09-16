@@ -56,12 +56,14 @@
                                       :library-name library-name))
                          :collect (coerce-to-c-name (prefix-name (api-function-prefix api) name)))))))
 
-(defun build-python-bindings (library directory &key (omit-init-call nil))
+(defun build-python-bindings (library directory &key (omit-init-call nil) (text-between-header-and-exports ""))
   (let ((file-name (concatenate 'string (library-c-name library) ".py")))    
     (with-open-file (stream (merge-pathnames file-name directory)
                             :direction :output
                             :if-exists :supersede)
       (funcall 'write-default-python-header library stream omit-init-call)
+      (write-string text-between-header-and-exports stream)
+      (terpri stream)
       (let* ((api-exports 
                (loop :for api :in (library-apis library)
                      :append (write-api-to-python api (library-c-name library) stream))))

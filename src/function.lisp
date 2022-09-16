@@ -80,4 +80,4 @@
                     (wrap-error-handling result error-map)
                     result))))
          (when *initialize-callables-p*
-           (sb-alien::initialize-alien-callable-symbol ',name))))))
+           (sb-alien::initialize-alien-callable-symbol ',callable-name))))))

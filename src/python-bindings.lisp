@@ -21,7 +21,7 @@
             library-name
             (coerce-to-c-name callable-name))))
 
-(defun write-default-python-header (library stream)
+(defun write-default-python-header (library stream &optional (omit-init-call nil))
   (let ((name (library-c-name library)))
     (format stream "import os~%")
     (format stream "from ctypes import *~%")
@@ -34,8 +34,9 @@
     (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)
 
     (format stream "~a = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" name)
-    (format stream "~a.init(str(libpath.parent / '~a.core').encode('utf-8'))~%~%"
-            name name)))
+    (unless omit-init-call
+      (format stream "~a.init(str(libpath.parent / '~a.core').encode('utf-8'))~%~%"
+              name name))))
 
 (defun write-api-to-python (api library-name stream)
   (loop :for (kind . things) :in (api-specs api)
@@ -55,12 +56,12 @@
                                       :library-name library-name))
                          :collect (coerce-to-c-name (prefix-name (api-function-prefix api) name)))))))
 
-(defun build-python-bindings (library directory)
+(defun build-python-bindings (library directory &key (omit-init-call nil))
   (let ((file-name (concatenate 'string (library-c-name library) ".py")))    
     (with-open-file (stream (merge-pathnames file-name directory)
                             :direction :output
                             :if-exists :supersede)
-      (funcall 'write-default-python-header library stream)
+      (funcall 'write-default-python-header library stream omit-init-call)
       (let* ((api-exports 
                (loop :for api :in (library-apis library)
                      :append (write-api-to-python api (library-c-name library) stream))))

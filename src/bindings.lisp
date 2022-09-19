@@ -66,7 +66,7 @@
                                              :function-prefix (api-function-prefix api)
                                              :error-map (api-error-map api))))))))))
 
-(defun write-init-function (name linkage stream)
+(defun write-init-function (name linkage stream &optional (initialize-lisp-args nil))
   (terpri stream)
   (format stream "extern int initialize_lisp(int argc, char **argv);~%~%")
   (format stream "~A {~%"
@@ -74,13 +74,16 @@
                                   :datap nil
                                   :linkage linkage))
   (format stream "  static int initialized = 0;~%")
-  (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\"};~%")
+  (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\", ~{\"~a\"~^, ~}};~%"
+          initialize-lisp-args)
   (format stream "  if (initialized) return 1;~%")
-  (format stream "  if (initialize_lisp(4, init_args) != 0) return -1;~%")
+  (format stream "  if (initialize_lisp(~a, init_args) != 0) return -1;~%"
+          (+ 4 (length initialize-lisp-args)))
   (format stream "  initialized = 1;~%")
   (format stream "  return 0; }"))
 
-(defun build-bindings (library directory &key (omit-init-function nil))
+(defun build-bindings (library directory &key (omit-init-function nil)
+                                              (initialize-lisp-args nil))
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
@@ -113,4 +116,4 @@
       (dolist (api (library-apis library))
         (write-api-to-source api stream))
       (unless omit-init-function
-        (write-init-function 'init linkage stream)))))
+        (write-init-function 'init linkage stream initialize-lisp-args)))))

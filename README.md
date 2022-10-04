@@ -1,6 +1,9 @@
 # sbcl-librarian
-Opinionated interface for creating shared libraries. Requires SBCL
+
+An opinionated interface for creating C- and Python-compatible shared libraries in Common Lisp with SBCL. Requires SBCL
 version >2.1.10.
+
+## Building the example
 
 You can build the example library using the Makefile in the example
 directory, which produces a header file, a source file, and a core
@@ -31,14 +34,19 @@ explicitly via the C function `lisp_load` or the Lisp function
 If you don't have `libsbcl.so`, make will try to build it for you
 by calling `make-shared-library.sh` at `${SBCL_SRC}` directory.
 
-NOTE: On Intel Mac OS X you *MUST* specify `-pagezero_size 0x100000`
+
+### Gotcha on Intel macOS
+
+On Intel macOS you *MUST* specify `-pagezero_size 0x100000`
 when linking the final executable, otherwise SBCL will fail to mmap
 its static space into the address `0x5000000`. This is because Mac
-decides to make page zero take up a whole `4GB` (!), which prevents
+decides to make page zero take up a whole 4GB (!), which prevents
 access to the 32-bit address space. (Ostensibly to prevent null
 pointer or other such bad (truncated?) pointer dereferences.)
 
-# Runtime notes
+
+## Runtime notes
+
 The SBCL runtime includes a garbage collector and memory allocator.
 
 Process resources SBCL uses:

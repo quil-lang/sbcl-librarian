@@ -14,7 +14,7 @@ You can compile example like so with:
 ```
 export SBCL_SRC=~/.roswell/src/sbcl-2.2.4
 
-cd example
+cd examples/libcalc
 make
 
 ./example

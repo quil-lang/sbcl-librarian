@@ -6,27 +6,38 @@ def die(msg):
     print(msg)
     exit(1)
 
+def accept_command():
+        [command, arg] = [x for x in input().split(' ') if x != '']
+        return command, int(arg)
+    
 if __name__ == '__main__':
     while True:
         print("consplode > ", end='')
         try:
-            n = int(input())
+            (command, arg) = accept_command()
+        except ValueError:
+            print("Bad input, try again")
+            continue
         except EOFError:
             sys.exit(0)
 
         consbomb = consplosion.consbomb_type()
-        if (consplosion.consplode(n, byref(consbomb)) != 0):
-            die("consbomb exploded :(")
+        if command == 'cons':
+            result = consplosion.consplode(arg, byref(consbomb))
+        elif command == 'hashtab':
+            result = consplosion.consplode_hashtables(arg, byref(consbomb))
+        elif command == 'vector':
+            result = consplosion.consplode_vector(arg, byref(consbomb))
+        else:
+            print("Unknown command " + command)
+
+
+        if result != 0:
+            print("conspbomb exploded")
+            sys.exit(0)
         else:
             print("consbomb still ticking...")
             
-        # result = c_char_p()
-        # if (libcalc.calc_expression_to_string(simplified, byref(result)) != 0):
-        #     die("unable to print expression to string")
-
-        # print('')
-        # print(result.value.decode('utf-8'))
-        # print('')
 
         consplosion.lisp_release_handle(consbomb)
 

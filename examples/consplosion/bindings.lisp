@@ -19,7 +19,9 @@
   (:type error-type consbomb-type)
   (:literal "/* functions */")
   (:function
-   (consplode consbomb-type ((n :int)))))
+   (consplode consbomb-type ((n :int)))
+   (consplode-hashtable consbomb-type ((n :int)))
+   (consplode-vector consbomb-type ((n :int)))))
 
 (define-aggregate-library consplosion (:function-linkage "DUMMY_API") ; what's this?
   sbcl-librarian:handles sbcl-librarian:environment consplosion-api)

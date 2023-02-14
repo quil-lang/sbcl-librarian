@@ -25,7 +25,7 @@ if __name__ == '__main__':
         if command == 'cons':
             result = consplosion.consplode(arg, byref(consbomb))
         elif command == 'hashtab':
-            result = consplosion.consplode_hashtables(arg, byref(consbomb))
+            result = consplosion.consplode_hashtable(arg, byref(consbomb))
         elif command == 'vector':
             result = consplosion.consplode_vector(arg, byref(consbomb))
         else:

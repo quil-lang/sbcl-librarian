@@ -3,18 +3,18 @@
 An opinionated interface for creating C- and Python-compatible shared libraries in Common Lisp with SBCL. Requires SBCL
 version >2.1.10.
 
-## Building the example
+## Building the libcalc example
 
-You can build the example library using the Makefile in the example
+You can build the example library using the Makefile in the `examples/libcalc`
 directory, which produces a header file, a source file, and a core
 file
 
-You can compile example like so with:
+You can compile the example like so with:
 
 ```
 export SBCL_SRC=~/.roswell/src/sbcl-2.2.4
 
-cd example
+cd examples/libcalc
 make
 
 ./example
@@ -24,7 +24,7 @@ which creates a shared library and executable using the functions
 defined in the example system, assuming you have `libsbcl.so`
 in a `${SBCL_SRC}/src/runtime/`.
 
-The file `add-on.lisp` in the example directory shows how to add new
+The file `add-on.lisp` in the `example/libcalc` directory shows how to add new
 API symbols at link time - the final artifact should be relinked into
 the final executable either by static or dynamic linkage - things work
 better on Windows with static linkage. `add-on.fasl` should be loaded

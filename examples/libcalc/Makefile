@@ -1,5 +1,5 @@
 EXAMPLES_DIR := $(shell pwd)
-ROOT_DIR := $(shell dirname $(EXAMPLES_DIR))
+ROOT_DIR := $(shell dirname $(shell dirname $(EXAMPLES_DIR)))
 
 .PHONY: all clean
 

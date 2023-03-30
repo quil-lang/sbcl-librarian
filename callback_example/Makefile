@@ -12,7 +12,7 @@ libsbcl.so: $(SBCL_SRC)
 	test ! -e $(SBCL_SRC)/src/runtime/libsbcl.so && cd $(SBCL_SRC) && ./make-shared-library.sh || true
 	cp $(SBCL_SRC)/src/runtime/libsbcl.so ./
 
-libcallback.core libcallback.c libcallback.h libcallback.py: libcallback.lisp
+libcallback.core libcallback.c libcallback.h libcallback.py: 
 	CL_SOURCE_REGISTRY="$(ROOT_DIR)//" $(SBCL_SRC)/run-sbcl.sh --script "script.lisp"
 
 libcallback.dylib: libcallback.core libcallback.c

@@ -19,12 +19,20 @@
                (:file "loader")
                (:file "environment")))
 
+(asdf:defsystem #:sbcl-librarian/project
+  :description "Project skeleton builder for SBCL-LIBRARIAN"
+  :author "Colin O'Keefe <cbokeefe@hrl.com>"
+  :depends-on (#:alexandria)
+  :serial t
+  :pathname "src/project/"
+  :components ((:file "package")
+               (:file "project")))
+
 (asdf:defsystem #:sbcl-librarian/tests
   :description "Tests for sbcl-librarian."
   :author "Kartik Singh <kssingh@hrl.com>"
   :depends-on (#:sbcl-librarian
-               #:fiasco
-               )
+               #:fiasco)
   :perform (test-op (o s)
                     (uiop:symbol-call ':sbcl-librarian.tests
                                       '#:run-test-suite))

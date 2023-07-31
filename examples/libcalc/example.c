@@ -9,7 +9,7 @@ void die(char *msg) {
 }
 
 int main(int argc, char **argv) {
-  init("libcalc.core");
+  sbcl_librarian_init("libcalc.core");
 
   char source[256];
   printf("> ");

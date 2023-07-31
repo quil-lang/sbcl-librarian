@@ -21,7 +21,8 @@
             library-name
             (coerce-to-c-name callable-name))))
 
-(defun write-default-python-header (library stream &optional (omit-init-call nil))
+(defun write-default-python-header (library stream &optional (init-function-name *default-init-name*)
+                                                             (omit-init-call nil))
   (let ((name (library-c-name library)))
     (format stream "import os~%")
     (format stream "from ctypes import *~%")
@@ -35,8 +36,8 @@
 
     (format stream "~a = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" name)
     (unless omit-init-call
-      (format stream "~a.init(str(libpath.parent / '~a.core').encode('utf-8'))~%~%"
-              name name))))
+      (format stream "~a.~a(str(libpath.parent / '~a.core').encode('utf-8'))~%~%"
+              name (coerce-to-c-name init-function-name) name))))
 
 (defun write-api-to-python (api library-name stream)
   (loop :for (kind . things) :in (api-specs api)

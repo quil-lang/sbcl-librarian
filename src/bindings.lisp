@@ -9,6 +9,9 @@
 (defparameter *elf-export-linkage*
   "__attribute__ ((visibility (\"default\")))")
 
+(defvar *default-init-name*
+  'sbcl-librarian-init)
+
 (defun write-linkage-macro (linkage build-name stream)
   (let ((windows "_WIN64")
         (elf "__ELF__"))
@@ -82,7 +85,8 @@
   (format stream "  initialized = 1;~%")
   (format stream "  return 0; }"))
 
-(defun build-bindings (library directory &key (omit-init-function nil)
+(defun build-bindings (library directory &key (init-function-name *default-init-name*)
+                                              (omit-init-function nil)
                                               (initialize-lisp-args nil))
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
@@ -103,7 +107,8 @@
         (write-api-to-header api linkage stream))
       (unless omit-init-function
         (format stream "~A;~%~%"
-                (c-function-declaration 'init ':int '((core :string))
+                (c-function-declaration init-function-name
+                                        ':int '((core :string))
                                         :datap nil
                                         :linkage linkage)))
       (format stream "#endif~%"))
@@ -116,4 +121,4 @@
       (dolist (api (library-apis library))
         (write-api-to-source api stream))
       (unless omit-init-function
-        (write-init-function 'init linkage stream initialize-lisp-args)))))
+        (write-init-function init-function-name linkage stream initialize-lisp-args)))))

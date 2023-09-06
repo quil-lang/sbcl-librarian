@@ -3,6 +3,7 @@
 (asdf:defsystem #:sbcl-librarian
   :description "Tool for generating Lisp bindings."
   :author "Charles Zhang <czhang@hrl.com>"
+  :depends-on (#:bordeaux-threads)
   ; :license "TODO"
   ; :version "0.0.1"
   :in-order-to ((test-op (test-op "sbcl-librarian/tests")))

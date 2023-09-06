@@ -100,7 +100,6 @@ Keyword Arguments
 (define-type :void
     :c-type "void" :alien-type sb-alien:void :python-type "None")
 
-
 ;;; some convenience type constructors
 
 (defmacro define-handle-type (name c-type)

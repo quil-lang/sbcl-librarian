@@ -10,12 +10,16 @@
 (defun key-handle (key) (sb-alien:sap-alien (sb-int::int-sap key) (* t)))
 (defun handle-key (handle) (sb-alien::sap-int (sb-alien:alien-sap handle)))
 
+(defvar *handle-lock*
+  (bt:make-lock "handle lock"))
+
 (defun make-handle (object)
-  (let* ((handles *handles*)
-         (key (svref handles 1)))
-    (setf (gethash key (svref handles 0)) object)
-    (setf (svref handles 1) (1+ key))
-    (key-handle key)))
+  (bt:with-lock-held (*handle-lock*)
+    (let* ((handles *handles*)
+           (key (svref handles 1)))
+      (setf (gethash key (svref handles 0)) object)
+      (setf (svref handles 1) (1+ key))
+      (key-handle key))))
 
 (defun dereference-handle (handle)
   (multiple-value-bind (object foundp)

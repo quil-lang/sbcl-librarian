@@ -11,10 +11,10 @@
 (defun handle-key (handle) (sb-alien::sap-int (sb-alien:alien-sap handle)))
 
 (defvar *handle-lock*
-  (bt:make-lock "handle lock"))
+  (sb-thread:make-mutex :name "handle lock"))
 
 (defun make-handle (object)
-  (bt:with-lock-held (*handle-lock*)
+  (sb-thread:with-mutex (*handle-lock*)
     (let* ((handles *handles*)
            (key (svref handles 1)))
       (setf (gethash key (svref handles 0)) object)

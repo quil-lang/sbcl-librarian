@@ -27,8 +27,19 @@
 (defun gc ()
   (sb-ext:gc :full t))
 
+(defun funcall0-by-name (name package-name)
+  "Calls the function called NAME in the PACKAGE called PACKAGE-NAME
+passing no arguments and throwing away the return value."
+  (let* ((package (if (string= "" package-name)
+                      (sb-int:sane-package)
+                      (string-upcase package-name)))
+         (symbol (find-symbol (string-upcase name) package)))
+    (funcall (symbol-function symbol)))
+  (values))
+
 (define-api environment (:function-prefix "")
   (:function
    (("lisp_enable_debugger" enable-debugger) :void ())
    (("lisp_disable_debugger" disable-debugger) :void ())
-   (("lisp_gc" gc) :void ())))
+   (("lisp_gc" gc) :void ())
+   (("lisp_funcall0_by_name" funcall0-by-name) :void ((name :string) (package-name :string)))))

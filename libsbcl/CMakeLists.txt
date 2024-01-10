@@ -33,10 +33,10 @@ set_source_files_properties(
   GENERATED TRUE
 )
 
-add_library(runtime SHARED libsbcl.cpp ${runtimePicObjectFiles})
+add_library(sbcl SHARED libsbcl.c ${runtimePicObjectFiles})
 
 add_custom_target(
   libsbcl ALL
-  COMMAND sh ${sbcl_SOURCE_DIR}/run-sbcl.sh --core ${sbcl_SOURCE_DIR}/output/sbcl.core --script ${CMAKE_CURRENT_SOURCE_DIR}/embed-core.lisp $<TARGET_FILE:runtime> ${CMAKE_SHARED_LIBRARY_SUFFIX}
-  DEPENDS runtime
+  COMMAND sh ${sbcl_SOURCE_DIR}/run-sbcl.sh --core ${sbcl_SOURCE_DIR}/output/sbcl.core --script ${CMAKE_CURRENT_SOURCE_DIR}/embed-core.lisp $<TARGET_FILE:sbcl> ${CMAKE_SHARED_LIBRARY_SUFFIX}
+  DEPENDS sbcl
 )

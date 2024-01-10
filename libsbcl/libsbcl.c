@@ -3,6 +3,8 @@
 
 extern int initialize_lisp(int argc, char *argv[], char *envp[]);
 
+int (*square)(int x);
+
 __attribute__((constructor))
 void init(void)
 {

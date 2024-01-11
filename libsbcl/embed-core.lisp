@@ -15,9 +15,6 @@
     (finish-output stream)
     (load filename)))
 
-(defun print-command-line-args ()
-  (format t "~A~%" (uiop:command-line-arguments)))
-
 (let ((runtime-path (first (uiop:command-line-arguments)))
       (shared-lib-suffix (second (uiop:command-line-arguments))))
   (setf (extern-alien "sbcl_runtime" (* t)) (make-alien-string runtime-path))

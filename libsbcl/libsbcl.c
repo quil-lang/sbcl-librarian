@@ -15,6 +15,6 @@ void init(void)
     dladdr(init, &info);
     printf("%s\n", info.dli_fname);
     const char *init_args[] = {"", "--core", info.dli_fname, "--no-userinit", "--noinform"};
-    int res = initialize_lisp(4, init_args, NULL);
+    int res = initialize_lisp(5, init_args, NULL);
     printf("hello from library load time, initialize_lisp returned %d\n", res);
 }

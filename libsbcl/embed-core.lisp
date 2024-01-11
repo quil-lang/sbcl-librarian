@@ -1,7 +1,7 @@
 (require "uiop")
 
 (define-alien-callable funcall0-by-name void ((name c-string))
-  (funcall (symbol-function (find-symbol name))))
+  (funcall (symbol-function (find-symbol (string-upcase name)))))
 
 (define-alien-callable set-argv void ((argc int) (argv (* (c-string #+win32 :external-format #+win32 :ucs-2))))
   (setf sb-ext:*posix-argv*

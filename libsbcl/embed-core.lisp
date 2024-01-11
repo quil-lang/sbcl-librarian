@@ -9,10 +9,10 @@
 	      :collect (sb-alien:deref argv i))))
 
 (define-alien-callable load-array void ((data (* (unsigned 8))) (size int))
-  (uiop:with-temporary-file (:stream stream :pathname filename :element-type '(unsigned-byte 8))
+  (uiop:with-temporary-file (:stream stream :pathname filename :direction :io :element-type 'unsigned-byte)
     (loop :for i :from 0 :below size
 	  :do (write-byte (deref data i) stream))
-    (format t "~A~%" (uiop:read-file-string filename))
+    (finish-output stream)
     (load filename)))
 
 (defun print-command-line-args ()

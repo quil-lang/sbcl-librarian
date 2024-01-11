@@ -4,7 +4,7 @@
   (funcall (symbol-function (find-symbol name))))
 
 (define-alien-callable set-argv void ((argc int) (argv (* (c-string #+win32 :external-format #+win32 :ucs-2))))
-  (setf sb-sys::*posix-argv*
+  (setf sb-ext:*posix-argv*
 	(loop :for i :from 0 :below argc
 	      :collect (sb-alien:deref argv i))))
 
@@ -13,6 +13,9 @@
     (loop :for i :from 0 :below size
 	  :do (write-byte (deref data i) stream))
     (load filename)))
+
+(defun print-command-line-args ()
+  (format t "~A~%" (uiop:command-line-arguments)))
 
 (let ((runtime-path (first (uiop:command-line-arguments)))
       (shared-lib-suffix (second (uiop:command-line-arguments))))

@@ -12,6 +12,7 @@
   (uiop:with-temporary-file (:stream stream :pathname filename :element-type '(unsigned-byte 8))
     (loop :for i :from 0 :below size
 	  :do (write-byte (deref data i) stream))
+    (format t "~A~%" (uiop:read-file-string filename))
     (load filename)))
 
 (defun print-command-line-args ()

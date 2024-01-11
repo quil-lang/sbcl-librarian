@@ -3,7 +3,9 @@
 
 extern int initialize_lisp(int argc, char *argv[], char *envp[]);
 
-int (*square)(int x);
+int (*funcall0_by_name)(const char *name);
+void (*set_argv)(int argc, char **argv);
+void (*load_array)(char *data, int size);
 
 __attribute__((constructor))
 void init(void)

@@ -17,7 +17,8 @@
                (:file "python-bindings")
                (:file "handles")
                (:file "loader")
-               (:file "environment")))
+               (:file "environment")
+               (:file "fasl-lib")))
 
 (asdf:defsystem #:sbcl-librarian/project
   :description "Project skeleton builder for SBCL-LIBRARIAN"

@@ -40,3 +40,6 @@ add_custom_target(
   COMMAND sh ${sbcl_SOURCE_DIR}/run-sbcl.sh --core ${sbcl_SOURCE_DIR}/output/sbcl.core --script ${CMAKE_CURRENT_SOURCE_DIR}/embed-core.lisp $<TARGET_FILE:sbcl> ${CMAKE_SHARED_LIBRARY_SUFFIX}
   DEPENDS sbcl
 )
+
+install(TARGETS sbcl LIBRARY RUNTIME)
+install(FILES libsbcl.h TYPE INCLUDE)

@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libsbcl.h>
+
 #define INCBIN_STYLE INCBIN_STYLE_SNAKE
 #define INCBIN_PREFIX
 #include "incbin.h"
-
-extern void (*funcall0_by_name)(const char *name);
-extern void (*set_argv)(int argc, char **argv);
-extern void (*load_array)(char *data, int size);
 
 static char src[] = "(defun test () (format t \"i was loaded from a string. argv: ~A~%\" (uiop:command-line-arguments)))";
 

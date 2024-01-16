@@ -1,3 +1,4 @@
+(require "asdf")
 (require "uiop")
 
 (define-alien-callable funcall0-by-name void ((name c-string))

@@ -3,7 +3,7 @@
 (define-alien-callable funcall0-by-name void ((name c-string))
   (funcall (symbol-function (find-symbol (string-upcase name)))))
 
-(define-alien-callable set-argv void ((argc int) (argv (* (c-string #+win32 :external-format #+win32 :ucs-2))))
+(define-alien-callable set-argv void ((argc int) (argv (* c-string)))
   (setf sb-ext:*posix-argv*
 	(loop :for i :from 0 :below argc
 	      :collect (sb-alien:deref argv i))))

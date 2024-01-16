@@ -36,6 +36,8 @@
 (defun create-fasl-loader-source-file (library fasl-filename directory)
   (declare (ignore library))
   (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
+    #+win32
+    (format stream "#include <Process.h>~%")
     (format stream "#include <libsbcl.h>~%")
     (terpri stream)
     (format stream "#define INCBIN_STYLE INCBIN_STYLE_SNAKE~%")
@@ -44,10 +46,23 @@
     (terpri stream)
     (format stream "INCBIN(fasl, \"~A\");~%" fasl-filename)
     (terpri stream)
-    (format stream "__attribute__((constructor))~%")
-    (format stream "void ~A(void) {~%" *fasl-loader-constructor-name*)
-    (format stream "    load_array(fasl_data, fasl_size);~%")
-    (format stream "}")))
+    #-win32
+    (progn
+      (format stream "__attribute__((constructor))~%")
+      (format stream "void ~A(void) {~%" *fasl-loader-constructor-name*)
+      (format stream "    load_array(fasl_data, fasl_size);~%")
+      (format stream "}"))
+    #+win32
+    (let ((buf-size 1024))
+      (format stream "BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {~%")
+      (format stream "    if (fdwReason == DLL_PROCESS_ATTACH) {~%")
+      (format stream "        char buf[~D];~%" buf-size)
+      (format stream "        GetModuleFileNameA(hinstDLL, buf, ~D);~%" buf-size)
+      (format stream "        load_shared_object(buf);~%")
+      (format stream "        load_array(fasl_data, fasl_size);~%")
+      (format stream "    }~%")
+      (format stream "    return TRUE;~%")
+      (format stream "}"))))
 
 (defun create-cmakelists-file (library fasl-filename directory)
   (let* ((c-name (library-c-name library))

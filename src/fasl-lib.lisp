@@ -2,7 +2,9 @@
 
 (defparameter *incbin-filename* "incbin.h")
 (defparameter *incbin-source-text*
-  (uiop:read-file-string (asdf:system-relative-pathname "sbcl-librarian" (uiop:merge-pathnames* *incbin-filename* "src/"))))
+  #.(uiop:read-file-string
+     (asdf:system-relative-pathname "sbcl-librarian"
+				    (uiop:merge-pathnames* *incbin-filename* "src/"))))
 
 (defparameter *fasl-loader-filename* "fasl_loader.c")
 (defparameter *fasl-loader-constructor-name* "load_embedded_fasl")

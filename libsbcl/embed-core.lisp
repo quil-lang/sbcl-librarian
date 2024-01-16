@@ -1,6 +1,8 @@
 (require "asdf")
 (require "uiop")
 
+(asdf:load-system :sbcl-librarian)
+
 (define-alien-callable funcall0-by-name void ((name c-string))
   (funcall (symbol-function (find-symbol (string-upcase name)))))
 
@@ -14,7 +16,8 @@
     (loop :for i :from 0 :below size
 	  :do (write-byte (deref data i) stream))
     (finish-output stream)
-    (load filename)))
+    (let ((sbcl-librarian::*initialize-callables-p* t))
+      (load filename))))
 
 (let ((runtime-path (first (uiop:command-line-arguments)))
       (shared-lib-suffix (second (uiop:command-line-arguments))))

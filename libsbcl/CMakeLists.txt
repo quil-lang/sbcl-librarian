@@ -40,7 +40,7 @@ endif (WIN32)
 
 add_custom_target(
   libsbcl ALL
-  COMMAND sh ${sbcl_SOURCE_DIR}/run-sbcl.sh --core ${sbcl_SOURCE_DIR}/output/sbcl.core --script ${CMAKE_CURRENT_SOURCE_DIR}/embed-core.lisp $<TARGET_FILE:sbcl> ${CMAKE_SHARED_LIBRARY_SUFFIX}
+  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/.. sh ${sbcl_SOURCE_DIR}/run-sbcl.sh --core ${sbcl_SOURCE_DIR}/output/sbcl.core --script ${CMAKE_CURRENT_SOURCE_DIR}/embed-core.lisp $<TARGET_FILE:sbcl> ${CMAKE_SHARED_LIBRARY_SUFFIX}
   DEPENDS sbcl
 )
 

@@ -28,9 +28,6 @@ void init(void)
         &mod
     );
     GetModuleFileNameA(mod, buf, BUF_SIZE);
-#if 0
-    GetMappedFileNameA(GetCurrentProcess(), init, buf, BUF_SIZE);
-#endif
     lib_path = buf;
 #else
     Dl_info info;

@@ -18,7 +18,7 @@ execute_process(
   WORKING_DIRECTORY ${sbcl_SOURCE_DIR}
 )
 execute_process(
-  COMMAND make -B -n -C src/runtime/ libsbcl.so
+  COMMAND make -B --no-print-directory -n -C src/runtime/ libsbcl.so
   COMMAND tail -n 1
   WORKING_DIRECTORY ${sbcl_SOURCE_DIR}
   OUTPUT_VARIABLE runtimeLinkCommand

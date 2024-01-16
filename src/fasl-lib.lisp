@@ -1,7 +1,7 @@
 (in-package #:sbcl-librarian)
 
-(defparameter *incbin-filename* "incbin.h")
 (eval-when (:compile-toplevel)
+  (defparameter *incbin-filename* "incbin.h")
   (defparameter *incbin-source-text*
     (uiop:read-file-string
      (asdf:system-relative-pathname "sbcl-librarian"

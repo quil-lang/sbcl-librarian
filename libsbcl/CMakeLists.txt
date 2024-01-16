@@ -34,6 +34,9 @@ set_source_files_properties(
 )
 
 add_library(sbcl SHARED libsbcl.c ${runtimePicObjectFiles})
+if (WIN32)
+  target_link_libraries(sbcl PRIVATE ws2_32 advapi32 Synchronization m)
+endif (WIN32)
 
 add_custom_target(
   libsbcl ALL

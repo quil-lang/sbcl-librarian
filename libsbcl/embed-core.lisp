@@ -2,6 +2,7 @@
 (require "uiop")
 
 (asdf:load-system :sbcl-librarian)
+(asdf:register-immutable-system :sbcl-librarian)
 
 (define-alien-callable funcall0-by-name void ((name c-string))
   (funcall (symbol-function (find-symbol (string-upcase name)))))

@@ -5,7 +5,7 @@
   (defparameter *incbin-source-text*
     (uiop:read-file-string
      (asdf:system-relative-pathname "sbcl-librarian"
-				    (uiop:merge-pathnames* *incbin-filename* "src/")))))
+                                    (uiop:merge-pathnames* *incbin-filename* "src/")))))
 
 (defparameter *fasl-loader-filename* "fasl_loader.c")
 (defparameter *fasl-loader-constructor-name* "load_embedded_fasl")
@@ -34,57 +34,57 @@
 
 (defun create-fasl-loader-source-file (system-name directory)
   (let* ((system-name-to-fasl-filename
-	   (loop :for system :in (asdf:required-components system-name :other-systems t :component-type 'asdf:system)
-		 :for system-name := (asdf:component-name system)
-		 :for fasl-path := (first (asdf:output-files 'asdf:compile-bundle-op system))
-		 :for fasl-filename := (uiop:enough-pathname fasl-path directory)
-		 :collect (cons system-name fasl-filename))))
+           (loop :for system :in (asdf:required-components system-name :other-systems t :component-type 'asdf:system)
+                 :for system-name := (asdf:component-name system)
+                 :for fasl-path := (first (asdf:output-files 'asdf:compile-bundle-op system))
+                 :for fasl-filename := (uiop:enough-pathname fasl-path directory)
+                 :collect (cons system-name fasl-filename))))
     (flet ((write-load-calls (stream indent-spaces)
-	     (loop :for (system-name . fasl-filename) :in system-name-to-fasl-filename
-		   :for system-c-name := (coerce-to-c-name system-name)
-		   :for data-name := (concatenate 'string system-c-name "_fasl_data")
-		   :for size-name := (concatenate 'string system-c-name "_fasl_size")
-		   :do (format stream "~Aload_array_as_system(~A, ~A, \"~A\");~%"
-			       indent-spaces data-name size-name system-name))))
+             (loop :for (system-name . fasl-filename) :in system-name-to-fasl-filename
+                   :for system-c-name := (coerce-to-c-name system-name)
+                   :for data-name := (concatenate 'string system-c-name "_fasl_data")
+                   :for size-name := (concatenate 'string system-c-name "_fasl_size")
+                   :do (format stream "~Aload_array_as_system(~A, ~A, \"~A\");~%"
+                               indent-spaces data-name size-name system-name))))
       (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
-	#+win32
-	(format stream "#include <Windows.h>~%")
-	(format stream "#include <libsbcl.h>~%")
-	(terpri stream)
-	(format stream "#define INCBIN_STYLE INCBIN_STYLE_SNAKE~%")
-	(format stream "#define INCBIN_PREFIX~%")
-	(format stream "#include \"incbin.h\"~%")
-	(terpri stream)
-	(loop :for (system-name . fasl-filename) :in system-name-to-fasl-filename
-	      :for system-c-name := (coerce-to-c-name system-name)
-	      :do (format stream "INCBIN(~A_fasl, \"~A\");~%" system-c-name fasl-filename))
-	(terpri stream)
-	#-win32
-	(progn
-	  (format stream "__attribute__((constructor))~%")
-	  (format stream "void ~A(void) {~%" *fasl-loader-constructor-name*)
-	  (write-load-calls stream "    ")
-	  (format stream "}"))
-	#+win32
-	(let ((buf-size 1024))
-	  (format stream "BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {~%")
-	  (format stream "    if (fdwReason == DLL_PROCESS_ATTACH) {~%")
-	  (format stream "        char buf[~D];~%" buf-size)
-	  (format stream "        GetModuleFileNameA(hinstDLL, buf, ~D);~%" buf-size)
-	  (format stream "        load_shared_object(buf);~%")
-	  (write-load-calls stream "        ")
-	  (format stream "    }~%")
-	  (format stream "    return TRUE;~%")
-	  (format stream "}"))))))
+        #+win32
+        (format stream "#include <Windows.h>~%")
+        (format stream "#include <libsbcl.h>~%")
+        (terpri stream)
+        (format stream "#define INCBIN_STYLE INCBIN_STYLE_SNAKE~%")
+        (format stream "#define INCBIN_PREFIX~%")
+        (format stream "#include \"incbin.h\"~%")
+        (terpri stream)
+        (loop :for (system-name . fasl-filename) :in system-name-to-fasl-filename
+              :for system-c-name := (coerce-to-c-name system-name)
+              :do (format stream "INCBIN(~A_fasl, \"~A\");~%" system-c-name fasl-filename))
+        (terpri stream)
+        #-win32
+        (progn
+          (format stream "__attribute__((constructor))~%")
+          (format stream "void ~A(void) {~%" *fasl-loader-constructor-name*)
+          (write-load-calls stream "    ")
+          (format stream "}"))
+        #+win32
+        (let ((buf-size 1024))
+          (format stream "BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {~%")
+          (format stream "    if (fdwReason == DLL_PROCESS_ATTACH) {~%")
+          (format stream "        char buf[~D];~%" buf-size)
+          (format stream "        GetModuleFileNameA(hinstDLL, buf, ~D);~%" buf-size)
+          (format stream "        load_shared_object(buf);~%")
+          (write-load-calls stream "        ")
+          (format stream "    }~%")
+          (format stream "    return TRUE;~%")
+          (format stream "}"))))))
 
 (defun create-cmakelists-file (library fasl-filename directory)
   (let* ((c-name (library-c-name library))
-	 (bindings-filename (concatenate 'string c-name ".c"))
-	 (source-filenames (list bindings-filename *incbin-filename* *fasl-loader-filename* fasl-filename)))
+         (bindings-filename (concatenate 'string c-name ".c"))
+         (source-filenames (list bindings-filename *incbin-filename* *fasl-loader-filename* fasl-filename)))
     (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output)
       (format stream "cmake_minimum_required(VERSION ~A)~%" *cmake-minimum-required*)
       (format stream "project(~A)~%" c-name)
       (format stream "configure_file(${CMAKE_CURRENT_SOURCE_DIR}/~A ${CMAKE_CURRENT_BINARY_DIR}/~A COPYONLY)~%"
-	      fasl-filename fasl-filename)
+              fasl-filename fasl-filename)
       (format stream "add_library(~A SHARED ~{~A~^ ~})~%" c-name source-filenames)
       (format stream "target_link_libraries(~A PRIVATE sbcl)~%" c-name))))

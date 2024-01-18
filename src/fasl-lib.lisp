@@ -8,7 +8,7 @@
                                     (uiop:merge-pathnames* *incbin-filename* "src/")))))
 
 (defparameter *fasl-loader-filename* "fasl_loader.c")
-(defparameter *fasl-loader-constructor-name* "load_embedded_fasl")
+(defparameter *fasl-loader-constructor-name* "load_embedded_fasls")
 
 (defparameter *cmake-minimum-required* "3.12")
 

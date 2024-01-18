@@ -12,13 +12,15 @@
 	(loop :for i :from 0 :below argc
 	      :collect (sb-alien:deref argv i))))
 
-(define-alien-callable load-array void ((data (* (unsigned 8))) (size int))
-  (uiop:with-temporary-file (:stream stream :pathname filename :direction :io :element-type 'unsigned-byte)
-    (loop :for i :from 0 :below size
-	  :do (write-byte (deref data i) stream))
-    (finish-output stream)
-    (let ((sbcl-librarian::*initialize-callables-p* t))
-      (load filename))))
+(define-alien-callable load-array-as-system void ((data (* (unsigned 8))) (size int) (system-name c-string))
+  (unless (asdf:component-loaded-p system-name)
+    (uiop:with-temporary-file (:stream stream :pathname filename :direction :io :element-type 'unsigned-byte)
+      (loop :for i :from 0 :below size
+	    :do (write-byte (deref data i) stream))
+      (finish-output stream)
+      (let ((sbcl-librarian::*initialize-callables-p* t))
+	(load filename)))
+    (asdf:register-immutable-system system-name)))
 
 (define-alien-callable load-shared-object void ((pathname c-string))
   (load-shared-object pathname))
@@ -27,4 +29,6 @@
       (shared-lib-suffix (second (uiop:command-line-arguments))))
   (setf (extern-alien "sbcl_runtime" (* t)) (make-alien-string runtime-path))
   (trace sb-alien::initialize-alien-callable-symbol)
-  (save-lisp-and-die (concatenate 'string "libsbcl" shared-lib-suffix) :executable t :callable-exports '(funcall0-by-name set-argv load-array load-shared-object)))
+  (save-lisp-and-die (concatenate 'string "libsbcl" shared-lib-suffix)
+		     :executable t
+		     :callable-exports '(funcall0-by-name set-argv load-array-as-system load-shared-object)))

@@ -41,7 +41,7 @@
 (defun create-fasl-loader-source-file (system-name-to-fasl-filename directory)
   (flet ((write-load-calls (stream indent-spaces)
            (loop :for (system-name . fasl-filename) :in system-name-to-fasl-filename
-                 :for system-c-name := (coerce-to-c-name system-name)
+                 :for system-c-name := (lisp-to-c-name (read-from-string system-name))
                  :for data-name := (concatenate 'string system-c-name "_fasl_data")
                  :for size-name := (concatenate 'string system-c-name "_fasl_size")
                  :do (format stream "~Aload_array_as_system(~A, ~A, \"~A\");~%"
@@ -56,7 +56,7 @@
       (format stream "#include \"incbin.h\"~%")
       (terpri stream)
       (loop :for (system-name . fasl-filename) :in system-name-to-fasl-filename
-            :for system-c-name := (coerce-to-c-name system-name)
+            :for system-c-name := (lisp-to-c-name (read-from-string system-name))
             :do (format stream "INCBIN(~A_fasl, \"~A\");~%" system-c-name fasl-filename))
       (terpri stream)
       #-win32

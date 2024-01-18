@@ -24,7 +24,10 @@
     (load (first (asdf:output-files 'asdf:compile-bundle-op system-name)))
     (let ((library (symbol-value (uiop:find-symbol* (string-upcase library-name) (string-upcase package-name))))
           (system-name-to-fasl-filename
-            (loop :for system :in (asdf:required-components system-name :other-systems t :component-type 'asdf:system)
+            (loop :for system :in (asdf:required-components system-name
+							    :other-systems t
+							    :component-type 'asdf:system
+							    :goal-operation 'asdf:compile-bundle-op)
                   :for system-name := (asdf:component-name system)
                   :for fasl-path := (first (asdf:output-files 'asdf:compile-bundle-op system))
                   :for fasl-filename := (uiop:enough-pathname fasl-path directory)

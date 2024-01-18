@@ -20,7 +20,8 @@
      `(:output-translations
        :inherit-configuration
        ((,(asdf:system-relative-pathname system-name "") #p"*--all-systems.fasl") ,build-directory)))
-    (asdf:oos 'asdf:monolithic-compile-bundle-op system-name)
+    (setf (slot-value (asdf:make-operation 'asdf:compile-bundle-op) 'asdf:sideway-operation) 'asdf:load-bundle-op)
+    (asdf:oos 'asdf:compile-bundle-op system-name)
     (asdf:clear-output-translations)
     (load fasl-path)
     (let ((library (symbol-value (uiop:find-symbol* (string-upcase library-name) (string-upcase package-name)))))

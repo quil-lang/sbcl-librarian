@@ -18,7 +18,7 @@
      `(:output-translations
        :inherit-configuration
        (t ,build-directory)))
-    (setf (slot-value (asdf:make-operation 'asdf:prepare-bundle-op) 'asdf:sideway-operation) 'asdf:load-bundle-op)
+    (setf (slot-value (asdf:make-operation 'asdf:prepare-bundle-op) 'asdf:sideway-operation) 'asdf:compile-bundle-op)
     (asdf:oos 'asdf:compile-bundle-op system-name)
     (asdf:clear-output-translations)
     (load (first (asdf:output-files 'asdf:compile-bundle-op system-name)))

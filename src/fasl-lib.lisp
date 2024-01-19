@@ -95,4 +95,4 @@
       (format stream "set_target_properties(~A PROPERTIES PREFIX \"\")~%" c-name)
       (format stream "target_link_libraries(~A PRIVATE sbcl)~%" c-name)
       (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)
-      (format stream "install(FILES lib~A.h TYPE INCLUDE)~%" c-name))))
+      (format stream "install(FILES ~A.h TYPE INCLUDE)~%" c-name))))

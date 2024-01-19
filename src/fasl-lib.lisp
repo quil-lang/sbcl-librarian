@@ -24,9 +24,11 @@
                                                             :goal-operation 'asdf:compile-bundle-op)
                   :for system-name := (asdf:component-name system)
                   :for fasl-path := (first (asdf:output-files 'asdf:compile-bundle-op system))
-                  :for fasl-filename := (file-namestring fasl-path)
-                  :do (uiop:copy-file fasl-path (uiop:merge-pathnames* fasl-filename build-directory))
-                  :collect (cons system-name fasl-filename))))
+                  :for fasl-filename := nil
+                  :when fasl-path
+                    :do (setf fasl-filename (file-namestring fasl-path))
+                        (uiop:copy-file fasl-path (uiop:merge-pathnames* fasl-filename build-directory))
+                    :and :collect (cons system-name fasl-filename))))
       (build-bindings library build-directory :omit-init-function t)
       (create-incbin-source-file build-directory)
       (create-fasl-loader-source-file system-name-to-fasl-filename build-directory)

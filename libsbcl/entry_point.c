@@ -5,16 +5,10 @@
 #else
 #include <dlfcn.h>
 #endif
-#include <stdio.h>
-
-extern int initialize_lisp(int argc, char *argv[], char *envp[]);
-
-int (*funcall0_by_name)(const char *name);
-void (*set_argv)(int argc, char **argv);
-void (*load_array_as_system)(char *data, int size, char *system_name);
-void (*load_shared_object)(char *pathname);
 
 #define BUF_SIZE 1024
+
+extern int initialize_lisp(int argc, char *argv[], char *envp[]);
 
 #ifdef _WIN32
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)

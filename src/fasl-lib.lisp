@@ -47,7 +47,7 @@
                  :for system-c-name := (lisp-to-c-name (read-from-string system-name))
                  :for data-name := (concatenate 'string system-c-name "_fasl_data")
                  :for size-name := (concatenate 'string system-c-name "_fasl_size")
-                 :do (format stream "~Aload_array_as_system(~A, ~A, \"~A\");~%"
+                 :do (format stream "~Alisp_load_array_as_system(~A, ~A, \"~A\");~%"
                              indent-spaces data-name size-name system-name))))
     (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
       #+win32
@@ -74,7 +74,7 @@
         (format stream "    if (fdwReason == DLL_PROCESS_ATTACH) {~%")
         (format stream "        char buf[~D];~%" buf-size)
         (format stream "        GetModuleFileNameA(hinstDLL, buf, ~D);~%" buf-size)
-        (format stream "        load_shared_object(buf);~%")
+        (format stream "        lisp_load_shared_object(buf);~%")
         (write-load-calls stream "        ")
         (format stream "    }~%")
         (format stream "    return TRUE;~%")

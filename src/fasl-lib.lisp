@@ -19,12 +19,13 @@
     (let ((library (symbol-value (uiop:find-symbol* (string-upcase library-name) (string-upcase package-name))))
           (system-name-to-fasl-filename
             (loop :for system :in (asdf:required-components system-name
-							    :other-systems t
-							    :component-type 'asdf:system
-							    :goal-operation 'asdf:compile-bundle-op)
+                                                            :other-systems t
+                                                            :component-type 'asdf:system
+                                                            :goal-operation 'asdf:compile-bundle-op)
                   :for system-name := (asdf:component-name system)
                   :for fasl-path := (first (asdf:output-files 'asdf:compile-bundle-op system))
-                  :for fasl-filename := (uiop:enough-pathname fasl-path directory)
+                  :for fasl-filename := (file-namestring fasl-path)
+                  :do (uiop:copy-file fasl-path (uiop:merge-pathnames* fasl-filename build-directory))
                   :collect (cons system-name fasl-filename))))
       (build-bindings library build-directory :omit-init-function t)
       (create-incbin-source-file build-directory)

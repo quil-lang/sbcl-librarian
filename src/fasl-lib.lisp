@@ -21,7 +21,6 @@
     (setf (slot-value (asdf:make-operation 'asdf:prepare-bundle-op) 'asdf:sideway-operation) 'asdf:compile-bundle-op)
     (asdf:oos 'asdf:compile-bundle-op system-name)
     (asdf:clear-output-translations)
-    (load (first (asdf:output-files 'asdf:compile-bundle-op system-name)))
     (let ((library (symbol-value (uiop:find-symbol* (string-upcase library-name) (string-upcase package-name))))
           (system-name-to-fasl-filename
             (loop :for system :in (asdf:required-components system-name

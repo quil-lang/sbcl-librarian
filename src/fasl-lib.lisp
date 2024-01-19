@@ -50,7 +50,7 @@
                  :for data-name := (concatenate 'string c-name "_fasl_data")
                  :for size-name := (concatenate 'string c-name "_fasl_size")
                  :do (format stream "~Alisp_load_array_as_system(~A, ~A, \"~A\");~%"
-                             indent-spaces data-name size-name c-name))))
+                             indent-spaces data-name size-name (asdf:component-name system)))))
     (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
       #+win32
       (format stream "#include <Windows.h>~%")

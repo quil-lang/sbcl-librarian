@@ -33,10 +33,16 @@ set_source_files_properties(
   GENERATED TRUE
 )
 
-add_library(sbcl SHARED libsbcl.c ${runtimePicObjectFiles})
+add_library(sbcl SHARED libsbcl.c libsbcl.h entry_point.c ${runtimePicObjectFiles})
 if (WIN32)
   target_link_libraries(sbcl PRIVATE ws2_32 advapi32 Synchronization m)
 endif (WIN32)
+
+add_custom_command(
+  OUTPUT libsbcl.c libsbcl.h
+  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/.. sh ${sbcl_SOURCE_DIR}/run-sbcl.sh --core ${sbcl_SOURCE_DIR}/output/sbcl.core --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 add_custom_target(
   libsbcl ALL

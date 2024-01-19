@@ -14,13 +14,8 @@
 
 (defun create-shared-library-cmake-project (system-name package-name library-name directory)
   (let* ((build-directory (uiop:ensure-pathname directory :ensure-directory t :ensure-directories-exist t)))
-    (asdf:initialize-output-translations
-     `(:output-translations
-       :inherit-configuration
-       (t ,build-directory)))
     (setf (slot-value (asdf:make-operation 'asdf:prepare-bundle-op) 'asdf:sideway-operation) 'asdf:compile-bundle-op)
     (asdf:oos 'asdf:compile-bundle-op system-name)
-    (asdf:clear-output-translations)
     (let ((library (symbol-value (uiop:find-symbol* (string-upcase library-name) (string-upcase package-name))))
           (system-name-to-fasl-filename
             (loop :for system :in (asdf:required-components system-name

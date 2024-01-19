@@ -18,6 +18,7 @@
                (:file "handles")
                (:file "loader")
                (:file "environment")
+               (:file "libsbcl")
                (:file "fasl-lib")))
 
 (asdf:defsystem #:sbcl-librarian/project

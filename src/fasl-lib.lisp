@@ -92,4 +92,6 @@
             :do (format stream "configure_file(${CMAKE_CURRENT_SOURCE_DIR}/~A ${CMAKE_CURRENT_BINARY_DIR}/~A COPYONLY)~%"
                         fasl-filename fasl-filename))
       (format stream "add_library(~A SHARED ~{~A~^ ~})~%" c-name source-filenames)
-      (format stream "target_link_libraries(~A PRIVATE sbcl)~%" c-name))))
+      (format stream "target_link_libraries(~A PRIVATE sbcl)~%" c-name)
+      (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)
+      (format stream "install(FILES lib~A.h TYPE INCLUDE)~%" c-name))))

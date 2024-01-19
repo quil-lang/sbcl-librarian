@@ -18,7 +18,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         GetModuleFileNameA(hinstDLL, lib_path, BUF_SIZE);
         char *init_args[] = {"", "--core", lib_path, "--no-userinit", "--noinform"};
 
-        return !initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, NULL);
+        return !initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
     }
 
     return TRUE;
@@ -31,6 +31,6 @@ void init(void)
     dladdr(init, &info);
     char *init_args[] = {"", "--core", info.dli_fname, "--no-userinit", "--noinform"};
 
-    initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, NULL);
+    initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
 }
 #endif

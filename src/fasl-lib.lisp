@@ -39,7 +39,7 @@
 
 (defun system-c-name (system)
   (loop :with name := (asdf:component-name system)
-        :for c :across "_/."
+        :for c :across "-/."
         :do (nsubstitute #\_ c name)
         :finally (return name)))
 

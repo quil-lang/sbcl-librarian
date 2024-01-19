@@ -27,7 +27,8 @@
    (("lisp_funcall0_by_name" funcall0-by-name) :void ((name :string)))
    (("lisp_set_argv" set-argv) :void ((argv :pointer)))
    (("lisp_load_array_as_system" load-array-as-system) :void ((data :pointer) (size :int) (system-name :string)))
-   (("lisp_load_shared_object" sb-alien:load-shared-object) :void ((path :string)))))
+   (("lisp_load_shared_object" sb-alien:load-shared-object) :void ((path :string)))
+   (("lisp_require_module" require) :void ((module-name :string)))))
 
 (sbcl-librarian:define-aggregate-library libsbcl ()
   libsbcl-addons

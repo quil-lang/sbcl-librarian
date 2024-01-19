@@ -40,7 +40,7 @@
 (defun system-c-name (system)
   (loop :with name := (asdf:component-name system)
         :for c :across "-/."
-        :do (nsubstitute #\_ c name)
+        :do (setf name (substitute #\_ c name))
         :finally (return name)))
 
 (defun create-fasl-loader-source-file (system-to-fasl-filename directory)

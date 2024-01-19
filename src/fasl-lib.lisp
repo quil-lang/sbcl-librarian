@@ -17,20 +17,23 @@
     (setf (slot-value (asdf:make-operation 'asdf:prepare-bundle-op) 'asdf:sideway-operation) 'asdf:compile-bundle-op)
     (asdf:oos 'asdf:compile-bundle-op system-name)
     (let ((library (symbol-value (uiop:find-symbol* (string-upcase library-name) (string-upcase package-name))))
-          (system-to-fasl-filename
-            (loop :for system :in (asdf:required-components system-name
-                                                            :other-systems t
-                                                            :component-type 'asdf:system
-                                                            :goal-operation 'asdf:compile-bundle-op)
-                  :for fasl-path := (first (asdf:output-files 'asdf:compile-bundle-op system))
-                  :for fasl-filename := nil
-                  :when fasl-path
-                    :do (setf fasl-filename (file-namestring fasl-path))
-                        (uiop:copy-file fasl-path (uiop:merge-pathnames* fasl-filename build-directory))
-                    :and :collect (cons system fasl-filename))))
+          (systems (asdf:required-components system-name
+                                             :other-systems t
+                                             :component-type 'asdf:system
+                                             :goal-operation 'asdf:compile-bundle-op))
+          (system-to-fasl-filename nil)
+          (require-systems nil))
+      (loop :for system :in systems
+            :if (typep system 'asdf:require-system)
+              :do (nconc require-systems system)
+            :else
+              :do (let* ((fasl-path (first (asdf:output-files 'asdf:compile-bundle-op system)))
+                         (fasl-filename (file-namestring fasl-path)))
+                    (uiop:copy-file fasl-path (uiop:merge-pathnames* fasl-filename build-directory))
+                    (nconc system-to-fasl-filename (cons system fasl-filename))))
       (build-bindings library build-directory :omit-init-function t)
       (create-incbin-source-file build-directory)
-      (create-fasl-loader-source-file system-to-fasl-filename build-directory)
+      (create-fasl-loader-source-file system-to-fasl-filename require-systems build-directory)
       (create-cmakelists-file library system-to-fasl-filename build-directory))))
 
 (defun create-incbin-source-file (directory)
@@ -43,14 +46,17 @@
         :do (setf name (substitute #\_ c name))
         :finally (return name)))
 
-(defun create-fasl-loader-source-file (system-to-fasl-filename directory)
+(defun create-fasl-loader-source-file (system-to-fasl-filename require-systems directory)
   (flet ((write-load-calls (stream indent-spaces)
            (loop :for (system . fasl-filename) :in system-to-fasl-filename
                  :for c-name := (system-c-name system)
                  :for data-name := (concatenate 'string c-name "_fasl_data")
                  :for size-name := (concatenate 'string c-name "_fasl_size")
                  :do (format stream "~Alisp_load_array_as_system(~A, ~A, \"~A\");~%"
-                             indent-spaces data-name size-name (asdf:component-name system)))))
+                             indent-spaces data-name size-name (asdf:component-name system))))
+         (write-require-calls (stream indent-spaces)
+           (loop :for system :in require-systems
+                 :do (format stream "~Alisp_require_module(\"~A\");~%" indent-spaces (asdf:component-name system)))))
     (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
       #+win32
       (format stream "#include <Windows.h>~%")
@@ -67,6 +73,7 @@
       (progn
         (format stream "__attribute__((constructor))~%")
         (format stream "void ~A(void) {~%" *fasl-loader-constructor-name*)
+        (write-require-calls stream "    ")
         (write-load-calls stream "    ")
         (format stream "}"))
       #+win32
@@ -76,6 +83,7 @@
         (format stream "        char buf[~D];~%" buf-size)
         (format stream "        GetModuleFileNameA(hinstDLL, buf, ~D);~%" buf-size)
         (format stream "        lisp_load_shared_object(buf);~%")
+        (write-require-calls stream "        ")
         (write-load-calls stream "        ")
         (format stream "    }~%")
         (format stream "    return TRUE;~%")

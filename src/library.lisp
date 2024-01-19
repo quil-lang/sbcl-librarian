@@ -63,10 +63,11 @@ NOTE: Here, the APIs must already be defined elsewhere."
                               (callable-name-with-c-prefix (prefix-name (api-function-prefix api) (first spec)) "_"))
                             things))))
 
-(defun build-core-and-die (library directory &key compression)
+(defun build-core-and-die (library directory &key compression core-name executable)
   (let* ((c-name (library-c-name library))
-         (core-name (concatenate 'string c-name ".core")))
+         (core-name (or core-name (concatenate 'string c-name ".core"))))
     (sb-ext:save-lisp-and-die
      (merge-pathnames core-name directory)
      :compression compression
+     :executable executable
      :callable-exports (callable-exports library))))

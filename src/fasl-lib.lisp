@@ -24,7 +24,8 @@
           (system-to-fasl-filename nil)
           (require-systems nil))
       (loop :for system :in systems
-            :if (typep system 'asdf:require-system)
+            :if (or (typep system 'asdf:require-system)
+                    (string= "asdf" (asdf:component-name system)))
               :do (nconc require-systems system)
             :else
               :do (let* ((fasl-path (first (asdf:output-files 'asdf:compile-bundle-op system)))

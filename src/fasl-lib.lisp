@@ -25,13 +25,15 @@
           (require-systems nil))
       (loop :for system :in systems
             :if (typep system 'asdf:require-system)
-              :do (nconc require-systems system)
+              :do (push system require-systems)
             :else
               :do (let ((fasl-path (first (asdf:output-files 'asdf:compile-bundle-op system))))
                     (unless (null fasl-path)
                       (let ((fasl-filename (file-namestring fasl-path)))
                         (uiop:copy-file fasl-path (uiop:merge-pathnames* fasl-filename build-directory))
-                        (nconc system-to-fasl-filename (cons system fasl-filename))))))
+                        (push (cons system fasl-filename) system-to-fasl-filename))))
+            :finally (setf system-to-fasl-filename (nreverse system-to-fasl-filename)
+                           require-systems (nreverse require-systems)))
       (build-bindings library build-directory :omit-init-function t)
       (create-incbin-source-file build-directory)
       (create-fasl-loader-source-file system-to-fasl-filename require-systems build-directory)

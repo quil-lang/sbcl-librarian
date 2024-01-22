@@ -5,6 +5,7 @@
 #else
 #include <dlfcn.h>
 #endif
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -33,7 +34,7 @@ static void do_initialize_lisp(char *libsbcl_path)
     int sbcl_home_path_len = libsbcl_dir_len + sizeof("libsbcl");
 
     sbcl_runtime_home = malloc((sbcl_home_path_len + 1) * sizeof(char));
-    snprintf(sbcl_runtime_home, sbcl_home_path_len, "%slibsbcl", libsbcl_dir)
+    snprintf(sbcl_runtime_home, sbcl_home_path_len, "%slibsbcl", libsbcl_dir);
 
     lisp_funcall0_by_name("os-cold-init-or-reinit", "sb-sys");
 }

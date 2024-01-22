@@ -58,5 +58,5 @@ install(TARGETS sbcl
 )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libsbcl.h TYPE INCLUDE)
 install(DIRECTORY ${sbcl_SOURCE_DIR}/obj/sbcl-home/contrib
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/libsbcl/contrib
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/libsbcl
 )

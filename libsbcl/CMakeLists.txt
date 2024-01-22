@@ -5,6 +5,8 @@ project(libsbcl)
 include(FetchContent)
 include(GNUInstallDirs)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 FetchContent_Declare(
   sbcl
   GIT_REPOSITORY git://git.code.sf.net/p/sbcl/sbcl

@@ -17,21 +17,35 @@ extern char *sbcl_runtime;
 extern char *dir_name(char *path);
 extern int initialize_lisp(int argc, char *argv[], char *envp[]);
 
+static void do_initialize_lisp(char *libsbcl_path)
+{
+    char *init_args[] = {"", "--core", libsbcl_path, "--no-userinit", "--noinform"};
+
+    initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
+
+    int libsbcl_path_len = strlen(libsbcl_path);
+
+    sbcl_runtime = malloc((libsbcl_path_len + 1) * sizeof(char));
+    strlcpy(sbcl_runtime, libsbcl_path, libsbcl_path_len + 1);
+
+    char *libsbcl_dir = dir_name(sbcl_runtime);
+    int libsbcl_dir_len = strlen(libsbcl_dir);
+    int sbcl_home_path_len = libsbcl_dir_len + sizeof("libsbcl");
+
+    sbcl_runtime_home = malloc((sbcl_home_path_len + 1) * sizeof(char));
+    snprintf(sbcl_runtime_home, sbcl_home_path_len, "%slibsbcl", libsbcl_dir)
+
+    lisp_funcall0_by_name("os-cold-init-or-reinit", "sb-sys");
+}
+
 #ifdef _WIN32
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH) {
-        char lib_path[BUF_SIZE];
-        GetModuleFileNameA(hinstDLL, lib_path, BUF_SIZE);
-        char *init_args[] = {"", "--core", lib_path, "--no-userinit", "--noinform"};
+        char libsbcl_path[BUF_SIZE];
 
-        initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
-
-        int n = strlen(lib_path) * sizeof(char);
-        sbcl_runtime = malloc(n);
-        memcpy(sbcl_runtime, lib_path, n);
-        sbcl_runtime_home = dir_name(sbcl_runtime);
-        lisp_funcall0_by_name("os-cold-init-or-reinit", "sb-sys");
+        GetModuleFileNameA(hinstDLL, libsbcl_path, BUF_SIZE);
+        do_initialize_lisp(libsbcl_path);
     }
 
     return TRUE;
@@ -41,15 +55,8 @@ __attribute__((constructor))
 void init(void)
 {
     Dl_info info;
-    dladdr(init, &info);
-    char *init_args[] = {"", "--core", info.dli_fname, "--no-userinit", "--noinform"};
 
-    initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
-
-    int n = strlen(info.dli_fname) * sizeof(char);
-    sbcl_runtime = malloc(n);
-    memcpy(sbcl_runtime, info.dli_fname, n);
-    sbcl_runtime_home = dir_name(sbcl_runtime);
-    lisp_funcall0_by_name("os-cold-init-or-reinit", "sb-sys");
+    dladdr(do_initialize_lisp, &info);
+    do_initialize_lisp(info.dli_fname);
 }
 #endif

@@ -1,7 +1,7 @@
 (in-package #:sbcl-librarian)
 
-(defun funcall0-by-name (name)
-  (funcall (symbol-function (find-symbol (string-upcase name))))
+(defun funcall0-by-name (name package-name)
+  (funcall (symbol-function (find-symbol (string-upcase name) (string-upcase package-name))))
   (values))
 
 (defun set-argv (argv)
@@ -24,7 +24,7 @@
 
 (sbcl-librarian:define-api libsbcl-addons (:function-prefix "")
   (:function
-   (("lisp_funcall0_by_name" funcall0-by-name) :void ((name :string)))
+   (("lisp_funcall0_by_name" funcall0-by-name) :void ((name :string) (package-name :string)))
    (("lisp_set_argv" set-argv) :void ((argv :pointer)))
    (("lisp_load_array_as_system" load-array-as-system) :void ((data :pointer) (size :int) (system-name :string)))
    (("lisp_load_shared_object" sb-alien:load-shared-object) :void ((path :string)))

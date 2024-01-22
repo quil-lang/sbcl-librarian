@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "libsbcl.h"
+
 #define BUF_SIZE 1024
 
 extern char *sbcl_runtime_home;
@@ -29,6 +31,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         sbcl_runtime = malloc(n);
         memcpy(sbcl_runtime, lib_path, n);
         sbcl_runtime_home = dir_name(sbcl_runtime);
+        lisp_funcall0_by_name("os-cold-init-or-reinit", "sb-sys");
     }
 
     return TRUE;
@@ -47,5 +50,6 @@ void init(void)
     sbcl_runtime = malloc(n);
     memcpy(sbcl_runtime, info.dli_fname, n);
     sbcl_runtime_home = dir_name(sbcl_runtime);
+    lisp_funcall0_by_name("os-cold-init-or-reinit", "sb-sys");
 }
 #endif

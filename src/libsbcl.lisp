@@ -1,12 +1,14 @@
 (in-package #:sbcl-librarian)
 
 (defun funcall0-by-name (name package-name)
-  (funcall (symbol-function (find-symbol (string-upcase name) (string-upcase package-name))))
+  (funcall (symbol-function (find-symbol (string-upcase name)
+                                         (if (string= "" package-name)
+                                             (sb-int:sane-package)
+                                             (string-upcase package-name)))))
   (values))
 
 (defun set-argv (argv)
   (let ((posix-argv (sb-alien:extern-alien "posix_argv" (* sb-alien:c-string))))
-    (sb-alien:free-alien posix-argv)
     (setf posix-argv argv)
     (sb-sys:os-cold-init-or-reinit)
     (values)))

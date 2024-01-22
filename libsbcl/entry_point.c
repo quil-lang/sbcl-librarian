@@ -8,6 +8,9 @@
 
 #define BUF_SIZE 1024
 
+extern char *sbcl_runtime_home;
+extern char *sbcl_runtime;
+extern char *dir_name(char *path);
 extern int initialize_lisp(int argc, char *argv[], char *envp[]);
 
 #ifdef _WIN32
@@ -18,7 +21,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         GetModuleFileNameA(hinstDLL, lib_path, BUF_SIZE);
         char *init_args[] = {"", "--core", lib_path, "--no-userinit", "--noinform"};
 
-        return !initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
+        initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
+        sbcl_runtime = lib_path;
+        sbcl_runtime_home = dir_name(sbcl_runtime);
     }
 
     return TRUE;
@@ -32,5 +37,7 @@ void init(void)
     char *init_args[] = {"", "--core", info.dli_fname, "--no-userinit", "--noinform"};
 
     initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
+    sbcl_runtime = info.dli_fname;
+    sbcl_runtime_home = dir_name(sbcl_runtime);
 }
 #endif

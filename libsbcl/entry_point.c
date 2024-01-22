@@ -20,7 +20,7 @@ extern int initialize_lisp(int argc, char *argv[], char *envp[]);
 
 static void do_initialize_lisp(char *libsbcl_path)
 {
-    char *init_args[] = {"", "--core", libsbcl_path, "--no-userinit", "--noinform"};
+    char *init_args[] = {"", "--dynamic-space-size", "8192", "--core", libsbcl_path, "--no-userinit", "--noinform"};
 
     initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, 0);
 

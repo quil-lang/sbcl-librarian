@@ -53,7 +53,7 @@ add_custom_target(
 )
 
 install(TARGETS sbcl
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/libsbcl
+  LIBRARY
   RUNTIME
 )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libsbcl.h TYPE INCLUDE)

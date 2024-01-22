@@ -20,7 +20,8 @@
           (systems (asdf:required-components system-name
                                              :other-systems t
                                              :component-type 'asdf:system
-                                             :goal-operation 'asdf:compile-bundle-op))
+                                             :goal-operation 'asdf:compile-bundle-op
+                                             :keep-operation 'asdf:compile-bundle-op))
           (system-to-fasl-filename nil)
           (require-systems nil))
       (loop :for system :in systems

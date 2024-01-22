@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.12)
 project(libsbcl)
 
 include(FetchContent)
+include(GNUInstallDirs)
+
 FetchContent_Declare(
   sbcl
   GIT_REPOSITORY git://git.code.sf.net/p/sbcl/sbcl

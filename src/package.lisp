@@ -11,6 +11,7 @@
            #:build-bindings
            #:build-python-bindings
            #:build-core-and-die
+           #:create-fasl-library-cmake-project
 
            #:loader
            #:handles

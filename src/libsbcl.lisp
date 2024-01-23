@@ -19,8 +19,10 @@
       (loop :for i :from 0 :below size
             :do (write-byte (sb-alien:deref (sb-alien:cast data (* (sb-alien:unsigned 8))) i) stream))
       (finish-output stream)
-      (let ((sbcl-librarian::*initialize-callables-p* t))
-        (load filename)))
+      (handler-bind
+	  ((sb-kernel:redefinition-warning #'muffle-warning))
+	(let ((sbcl-librarian::*initialize-callables-p* t))
+          (load filename))))
     (asdf:register-immutable-system system-name)
     (values)))
 

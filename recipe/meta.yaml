@@ -1,0 +1,35 @@
+{% set version = load_file_regex(load_file="../lib/VERSION.txt", regex_pattern="(.*)\n", from_recipe_dir=True).group(1) %}
+
+package:
+  name: sbcl-librarian
+  version: {{ version }}
+
+source:
+  - path: ../sbcl-librarian.asd
+  - path: ../src
+    folder: src
+  - path: ../lib
+    folder: lib
+  - git_url: https://github.com/slime/slime.git
+    folder: slime
+  - path: build.ps1                   # [win]
+
+build:
+  binary_relocation: False
+  script_env:
+    - SBCL_SRC
+    - LIBRARY_PATH
+    - LD_LIBRARY_PATH   # [not osx]
+    - DYLD_LIBRARY_PATH # [osx]
+    - MSYS2_CMD         # [win]
+
+requirements:
+  build:
+#    - {{ compiler('c') }}
+#    - {{ compiler('cxx') }}
+    - python
+    - cmake
+  host:
+    - python {{ python }}
+  run:
+    - python {{ python }}

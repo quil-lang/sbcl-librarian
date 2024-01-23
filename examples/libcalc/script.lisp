@@ -1,15 +1,9 @@
-(require '#:asdf)
-
-(ql:quickload '#:libcalc)
-
 (when (uiop:getenv "CI")
   (push :github-ci *features*))
 
+(ql:quickload :libcalc)
+
 (in-package #:sbcl-librarian/example/libcalc)
 
-(build-bindings libcalc ".")
-(build-python-bindings libcalc "." #+github-ci :library-path
-                                   #+(and github-ci win32) (concatenate 'string (uiop:getenv "MSYSTEM_PREFIX") "/bin/libcalc.dll")
-                                   #+(and github-ci linux) "/usr/local/lib/libcalc.so"
-                                   #+(and github-ci darwin) nil)
-(build-core-and-die libcalc "." :compression nil))
+(sbcl-librarian:create-fasl-library-cmake-project "libcalc" calc "./libcalc/")
+(sbcl-librarian:build-python-bindings calc "." :omit-init-call t)

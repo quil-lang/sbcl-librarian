@@ -18,11 +18,11 @@ shared library constructor that loads the embedded FASLs.")
 (defparameter *cmake-minimum-required* "3.12"
   "The minimum version of CMake required to run the generated project.")
 
-(defparameter *base-library-name* "sbcl"
+(defparameter *base-library-name* "sbcl_librarian"
   "The name of the shared library (minus the file suffix and 'lib' prefix) containing the
 SBCL runtime.")
 
-(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name "sbcl"))
+(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name *base-library-name*))
   "Generate a CMake project in DIRECTORY for a shared library that, when
 loaded into a process that has already initialized the SBCL runtime,
 adds the C symbols for LIBRARY to the current process's symbol table
@@ -46,14 +46,14 @@ skipping those for already-loaded systems."
                           (list target-system)))
          (*base-library-name* base-library-name))
     (compile-bundle-system-with-dependencies target-system build-directory)
-    (build-bindings library build-directory :omit-init-function t :fasl-lib-p t)
+    (build-bindings library build-directory :omit-init-function t)
     (create-incbin-source-file build-directory)
     (create-fasl-loader-source-file library systems build-directory)
     (create-cmakelists-file library systems build-directory)))
 
 (defun create-incbin-source-file (directory)
   "Copy the incbin source code to DIRECTORY."
-  (with-open-file (stream (uiop:merge-pathnames* *incbin-filename* directory) :direction :output)
+  (with-open-file (stream (uiop:merge-pathnames* *incbin-filename* directory) :direction :output :if-exists :supersede)
     (format stream *incbin-source-text*)))
 
 (defun system-c-name (system)
@@ -88,10 +88,14 @@ symbols defined in SYSTEMS. The C functions to perform
                  :for system-name := (asdf:component-name system)
                  :when (typep system 'asdf:require-system)
                    :do (format stream "~v@{ ~}lisp_require(\"~A\");~%" indent-size system-name))))
-    (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
+    (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output :if-exists :supersede)
+      #+linux
+      (progn
+        (format stream "#define _GNU_SOURCE~%")
+        (format stream "#include <dlfcn.h>~%"))
       #+win32
       (format stream "#include <Windows.h>~%")
-      (format stream "#include \<lib~A.h\>~%" *base-library-name*)
+      (format stream "#include \<~A.h\>~%" *base-library-name*)
       (terpri stream)
       (format stream "#define INCBIN_STYLE INCBIN_STYLE_SNAKE~%")
       (format stream "#define INCBIN_PREFIX~%")
@@ -105,13 +109,26 @@ symbols defined in SYSTEMS. The C functions to perform
       (progn
         (let ((function-name (fasl-library-load-function-name library)))
           (format stream "__attribute__((constructor))~%static void ~A(void) {~%" function-name)
+          ;; It seems that on Linux, dlsym(NULL, "sym") fails to find
+          ;; "sym" unless its containing shared object was explicitly
+          ;; dlopened with the RTLD_GLOBAL flag. The process has
+          ;; already loaded the shared library at this point, so this
+          ;; is a no-op except for making its symbols visible in the
+          ;; global namespace. Without this, loading a FASL that
+          ;; defines alien callable symbols will fail when it tries to
+          ;; initialize the symbols.
+          #+linux
+          (progn
+            (format stream "    Dl_info info;~%")
+            (format stream "    dladdr(~A_fasl_data, &info);~%" (system-c-name (first (remove-if-not #'system-loadable-from-fasl-p systems))))
+            (format stream "    dlopen(info.dli_fname, RTLD_NOW | RTLD_GLOBAL);~%"))
           #+win32
           (let ((buf-size 1024))
             (format stream "    char dll_path[~D];~%" buf-size)
             (format stream "    HMODULE dll_mod;~%")
             (format stream "    GetModuleHandleEx(~%")
             (format stream "        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,~%")
-            (format stream "        ~A,~%" function-name)
+            (format stream "        (LPCSTR) ~A,~%" function-name)
             (format stream "        &dll_mod);~%")
             (format stream "    GetModuleFileNameA(dll_mod, dll_path, ~D);~%" buf-size)
             (format stream "    lisp_load_shared_object(dll_path);~%")))
@@ -129,7 +146,7 @@ library and its header file."
          (loadable-systems (remove-if-not #'system-loadable-from-fasl-p systems))
          (source-filenames (append (list bindings-filename *incbin-filename* *fasl-loader-filename*)
                                    (mapcar #'system-fasl-bundle-filename loadable-systems))))
-    (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output)
+    (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output :if-exists :supersede)
       (format stream "cmake_minimum_required(VERSION ~A)~%" *cmake-minimum-required*)
       (format stream "project(~A)~%" c-name)
       (loop :for system :in loadable-systems
@@ -140,6 +157,8 @@ library and its header file."
       (format stream "set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})~%")
       (format stream "find_library(BASE_LIBRARY NAMES lib~A${CMAKE_SHARED_LIBRARY_SUFFIX})~%" *base-library-name*)
       (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+win32 "${BASE_LIBRARY}")
-      (format stream "target_link_libraries(~A PRIVATE ${BASE_LIBRARY})~%" c-name)
+      #+win32
+      (format stream "set_target_properties(~A PROPERTIES PREFIX \"\")~%" c-name)
+      (format stream "target_link_libraries(~A PUBLIC ${BASE_LIBRARY})~%" c-name)
       (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)
       (format stream "install(FILES ~A.h TYPE INCLUDE)~%" c-name))))

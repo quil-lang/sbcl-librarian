@@ -1,0 +1,13 @@
+[project]
+name = "sbcl_librarian"
+dynamic = ["version"]
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "sbcl_librarian.version.__version__"}

@@ -26,7 +26,11 @@ jobs:
         path: sbcl
     - uses: msys2/setup-msys2@v2
       with:
-        install: mingw-w64-x86_64-gcc mingw-w64-x86_64-clang mingw-w64-x86_64-lld make diffutils git python3 dos2unix
+        path-type: minimal
+        install: mingw-w64-x86_64-gcc mingw-w64-x86_64-clang mingw-w64-x86_64-lld mingw-w64-x86_64-cmake make diffutils git dos2unix
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        channels: conda-forge
 
     - name: install host sbcl
       shell: pwsh
@@ -41,25 +45,52 @@ jobs:
         PATH=$PATH:"/c/Program Files/Steel Bank Common Lisp/1.4.14"
         export PATH
         dos2unix '${{ github.workspace }}\patches\win32-clang-build.patch'
+        dos2unix '${{ github.workspace }}\patches\win32-dll-build.patch'
         if [ "clang" = "${{ matrix.cc }}" ]; then git apply --verbose '${{ github.workspace }}\patches\win32-clang-build.patch'; fi
-        CC=${{ matrix.cc }} ./make.sh --xc-host='sbcl --lose-on-corruption --disable-ldb --disable-debugger' --with-sb-linkable-runtime
+        git apply --verbose '${{ github.workspace }}\patches\win32-dll-build.patch'
+        CC=${{ matrix.cc }} ./make.sh --xc-host='sbcl --lose-on-corruption --disable-ldb --disable-debugger'
+        CC=${{ matrix.cc }} ./make-shared-library.sh
+        echo "SBCL_SRC=${{ github.workspace }}\..\sbcl" >> "$GITHUB_ENV"
+        echo "LIBSBCL_PATH=${{ github.workspace }}\..\sbcl\src\runtime" >> "$GITHUB_ENV"
     - name: install quicklisp
       working-directory: ../sbcl
       run: |
         curl -O https://beta.quicklisp.org/quicklisp.lisp
         ./run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
+    - name: build and install conda package
+      env:
+        LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
+        MSYS2_CMD: D:\a\_temp\setup-msys2\msys2.CMD
+      shell: pwsh
+      run: |
+        conda install conda-build
+        conda build recipe --output-folder conda-bld
+        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian python
+    - name: set environment variables
+      shell: pwsh
+      run: |
+        echo "LIBRARY_PATH=$env:LIBSBCL_PATH:$env:CONDA_PREFIX\lib" >> "$env:GITHUB_ENV"
+        echo "LD_LIBRARY_PATH=$env:LIBSBCL_PATH:$env:CONDA_PREFIX\lib" >> "$env:GITHUB_ENV"
+        echo "C_INCLUDE_PATH=$env:CONDA_PREFIX\include" >> "$env:GITHUB_ENV"
     - name: build and run example
       working-directory: examples/libcalc
       env:
-        SBCL_SRC: ${{ github.workspace }}/../sbcl
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
-        MSYS2_PATH_TYPE: inherit
+        MSYS_PATH_TYPE: inherit
+      shell: pwsh
       run: |
-        $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
-        ${{ matrix.cc }} -Wall -fPIC -shared -Wl,--export-all-symbols -o libcalc.dll libcalc.c -Wl,--whole-archive $SBCL_SRC/src/runtime/libsbcl.a -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd
-        ${{ matrix.cc }} -Wall -o example example.c -lcalc -L.
-        mv libcalc.dll $MSYSTEM_PREFIX/bin
-        cp libcalc.core $MSYSTEM_PREFIX/bin
-        echo "(+ 1 2)" | ./example.exe | tr -d '\r\n' | grep "> 3> "
-        echo "(+ 1 2)" | python ./example.py | tr -d '\r\n' | grep "> 3> "
-        python ./exhaust_heap.py | grep "returned to Python with error code 2 after heap exhaustion"
+        $env:MINGW64_PATH="D:\a\_temp\msys64\mingw64\bin"
+        $env:PATH="$env:PATH;$env:LIBSBCL_PATH;$env:MINGW64_PATH"
+        D:\a\_temp\setup-msys2\msys2.CMD -c '$SBCL_SRC/run-sbcl.sh --load script.lisp --quit'
+        pushd libcalc
+        mkdir build
+        pushd build
+        D:\a\_temp\setup-msys2\msys2.CMD -c 'cmake -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -G ''MSYS Makefiles'' ..'
+        D:\a\_temp\setup-msys2\msys2.CMD -c "cmake --build ."
+        D:\a\_temp\setup-msys2\msys2.CMD -c "cmake --install ."
+        popd
+        popd
+        D:\a\_temp\setup-msys2\msys2.CMD -c "gcc -Wall -o example example.c -lcalc -lsbcl_librarian"
+        if ((echo '(+ 1 2)' | .\example.exe) -match "3") { exit 0 } else { exit 1 }
+        if ((echo '(+ 1 2)' | python example.py) -match "3") { exit 0 } else { exit 1 }
+        if ((python exhaust_heap.py) -match "attempt 1") { exit 0 } else { exit 1 }

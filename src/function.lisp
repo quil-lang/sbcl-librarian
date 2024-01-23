@@ -1,17 +1,5 @@
 (in-package #:sbcl-librarian)
 
-(defparameter *longjmp-operator*
-  #-win32 "longjmp" #+win32 "__builtin_longjmp"
-  "The name of the function/macro/builtin that implements longjmp. Note
-that we use __builtin_longjmp on Windows because, unlike the longjmp
-provided by the UCRT, it does not perform stack unwinding, which does
-not work with Lisp stack frames.")
-
-(defparameter *setjmp-operator*
-  #-win32 "setjmp" #+win32 "__builtin_setjmp"
-  "The name of the function/macro/builtin that implements longjmp. See
-the documentation for *longjmp-operator* for rationale.")
-
 (defvar *initialize-callables-p* nil
   "Bound to T when we are loading Lisp and want to reinitialize
   callables on load.")
@@ -96,12 +84,11 @@ if (!setjmp(fatal_lisp_error_handler)) {
                                           (list "result"))))))
         (format nil "~a {~%~a~%}~%"
                 header
-                (format nil "    if (!fatal_sbcl_error_occurred && !~a(JMP_BUF_CAST fatal_lisp_error_handler)) {
+                (format nil "    if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler)) {
         ~a
     } else {
         ~a
     }"
-                        *setjmp-operator*
                         call-statement
                         ;; If the error map does not have specify a
                         ;; fatal error code, then drop into LDB.

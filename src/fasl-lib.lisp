@@ -17,11 +17,12 @@
     (setf (slot-value (asdf:make-operation 'asdf:prepare-bundle-op) 'asdf:sideway-operation) 'asdf:compile-bundle-op)
     (asdf:oos 'asdf:compile-bundle-op system-name)
     (let ((library (symbol-value (uiop:find-symbol* (string-upcase library-name) (string-upcase package-name))))
-          (systems (asdf:required-components system-name
-                                             :other-systems t
-                                             :component-type 'asdf:system
-                                             :goal-operation 'asdf:compile-bundle-op
-                                             :keep-operation 'asdf:compile-bundle-op))
+          (systems (append (asdf:required-components system-name
+                                                     :other-systems t
+                                                     :component-type 'asdf:system
+                                                     :goal-operation 'asdf:compile-bundle-op
+                                                     :keep-operation 'asdf:compile-bundle-op)
+                           (list (asdf:find-system system-name))))
           (system-to-fasl-filename nil)
           (require-systems nil))
       (loop :for system :in systems

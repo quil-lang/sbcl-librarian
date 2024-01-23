@@ -13,16 +13,21 @@
   :pathname "src/"
   :components ((:file "package")
                (:file "asdf-utils")
+               (:file "util")
                (:file "types")
                (:file "function")
                (:file "api")
+               (:file "conditions")
+               (:file "errors")
                (:file "library")
                (:file "bindings")
                (:file "python-bindings")
                (:file "handles")
                (:file "loader")
                (:file "environment")
-               (:file "fasl-lib")))
+               (:file "fasl-lib")
+               (:file "diagnostics")
+               ))
 
 (asdf:defsystem #:sbcl-librarian/project
   :description "Project skeleton builder for SBCL-LIBRARIAN"

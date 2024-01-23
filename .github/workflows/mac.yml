@@ -28,22 +28,58 @@ jobs:
       run: |
         ./make.sh --xc-host='sbcl --lose-on-corruption --disable-ldb --disable-debugger'
         ./make-shared-library.sh
+        echo "SBCL_SRC=${{ github.workspace }}/../sbcl" >> "$GITHUB_ENV"
+        echo "LIBSBCL_PATH=${{ github.workspace }}/../sbcl/src/runtime" >> "$GITHUB_ENV"
     - name: install quicklisp
       working-directory: ../sbcl
       run: |
         curl -O https://beta.quicklisp.org/quicklisp.lisp
         ./run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
+    - name: install conda
+      run: |
+        mkdir -p ~/miniconda3
+        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
+        bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+        rm ~/miniconda3/miniconda.sh
+    - name: install conda-build
+      run: |
+        source ~/miniconda3/etc/profile.d/conda.sh
+        conda activate
+        conda config --add channels conda-forge
+        conda install -y conda-build
+    - name: build and install conda package
+      env:
+        LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
+        DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
+      run: |
+        source ~/miniconda3/etc/profile.d/conda.sh
+        conda activate
+        conda build recipe --output-folder conda-bld
+        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian
+    - name: set environment variables
+      run: |
+        source ~/miniconda3/etc/profile.d/conda.sh
+        conda activate
+        echo "LIBRARY_PATH=$LIBSBCL_PATH:$CONDA_PREFIX/lib" >> "$GITHUB_ENV"
+        echo "DYLD_LIBRARY_PATH=$LIBSBCL_PATH:$CONDA_PREFIX/lib" >> "$GITHUB_ENV"
+        echo "C_INCLUDE_PATH=$CONDA_PREFIX/include" >> "$GITHUB_ENV"
     - name: build and run example
       working-directory: examples/libcalc
       env:
-        SBCL_SRC: ${{ github.workspace }}/../sbcl
-        LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime:.
-        DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime:.
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
       run: |
+        source ~/miniconda3/etc/profile.d/conda.sh
+        conda activate
         $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
-        gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl
-        gcc -Wall -o example example.c -lcalc -lsbcl
+        pushd libcalc
+        mkdir build
+        pushd build
+        cmake -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
+        cmake --build .
+        cmake --install .
+        popd
+        popd
+        gcc -Wall -o example example.c -lcalc -lsbcl_librarian
         echo "(+ 1 2)" | ./example | tr -d '\n' | grep "> 3> "
-        echo "(+ 1 2)" | python3 ./example.py | tr -d '\n' | grep "> 3> "
-        python3 ./exhaust_heap.py | grep "returned to Python with error code 2 after heap exhaustion"
+        echo "(+ 1 2)" | python ./example.py | tr -d '\n' | grep "> 3> "
+        python ./exhaust_heap.py | grep "returned to Python after heap exhaustion (attempt 1)"

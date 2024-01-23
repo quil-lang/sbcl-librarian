@@ -1,0 +1,42 @@
+From 3689f3e8291a4ad289ad8580a9afb227cbb8e7eb Mon Sep 17 00:00:00 2001
+From: Kartik Singh <kssingh@hrl.com>
+Date: Thu, 12 Dec 2024 11:40:25 -0800
+Subject: [PATCH] Patch libsbcl build for Windows
+
+---
+ make-shared-library.sh  | 2 +-
+ src/runtime/GNUmakefile | 8 ++++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/make-shared-library.sh b/make-shared-library.sh
+index 9acd9d843..39a951e9e 100755
+--- a/make-shared-library.sh
++++ b/make-shared-library.sh
+@@ -5,4 +5,4 @@
+ echo //entering make-shared-library.sh
+ echo //building sbcl runtime into a shared library
+ 
+-$GNUMAKE -C src/runtime libsbcl.so
++$GNUMAKE -C src/runtime libsbcl.dll
+diff --git a/src/runtime/GNUmakefile b/src/runtime/GNUmakefile
+index 15e12a995..e02db7906 100644
+--- a/src/runtime/GNUmakefile
++++ b/src/runtime/GNUmakefile
+@@ -132,8 +132,12 @@ libsbcl.a: $(OBJS)
+ 	rm -f $@ ; ar rcs $@ $^
+ 
+ PIC_OBJS = $(subst .o,.pic.o,$(OBJS))
+-libsbcl.so: $(PIC_OBJS)
+-	$(CC) -shared -o $@ $^ $(LIBS) $(SOFLAGS)
++libsbcl.dll: $(PIC_OBJS)
++# The MINGW64 environment uses msvcrt.dll as the C runtime, which does
++# not export log1p and log2. We statically link MPFR, which provides
++# those two functions, into the DLL and then export the missing
++# functions via mswin64.def.
++	$(CC) -shared -o $@ $^ $(LIBS) $(SOFLAGS) -Wl,-export-all-symbols -Wl,--whole-archive -lmpfr -Wl,--no-whole-archive mswin64.def
+ # for this to work, you must have with-gcc-tls in your build features already.
+ # can't define it here because then it conflicts if you have it in both places.
+ %.pic.o: %.c
+-- 
+2.39.2 (Apple Git-143)
+

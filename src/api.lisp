@@ -99,17 +99,17 @@ Prepends FUNCTION-PREFIX to generated function names, and wraps error handling a
           :documentation "A list of specifications."))
   (:documentation "A specification of functions and types for export to a shared library."))
 
-(defmacro define-api (name (&key error-map (function-prefix ""))
+(defmacro define-api (name (&key (function-prefix ""))
                       &body specs)
   "Define an API.
 
 In addition to constructing a suitable API object, this also ensures that alien callable definitions are defined."
   `(progn
-     ,@(callable-definitions-from-spec function-prefix error-map specs)
+     ,@(callable-definitions-from-spec function-prefix 'default-error-map specs)
      (defvar ,name
        (make-instance 'api
          :name ',name
-         :error-map ',error-map
+         :error-map 'default-error-map
          :function-prefix ,function-prefix
          :specs ',specs))))
 

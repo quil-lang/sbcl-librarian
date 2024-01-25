@@ -77,14 +77,15 @@
                                   :datap nil
                                   :linkage linkage))
   (when constructor-p
+    (let ((c-name (coerce-to-c-name name))))
     #-win32
-    (format stream "  Dl_info info; dladdr(~A, &info); char *core = (void *) info.dli_fname;~%" name)
+    (format stream "  Dl_info info; dladdr(~A, &info); char *core = (void *) info.dli_fname;~%" c-name)
     #+win32
     (let ((buf-size 1024))
       (format stream "  HMODULE dll_mod; char dll_path[~D];~%" buf-size)
       (format stream "  GetModuleHandleEx(~%")
       (format stream "    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,~%")
-      (format stream "    ~A,~%" name)
+      (format stream "    ~A,~%" c-name)
       (format stream "    &dll_mod);")
       (format stream "  GetModuleFileNameA(dll_mod, dll_path, ~D);~%" buf-size)
       (format stream "  char *core = dll_path;")))

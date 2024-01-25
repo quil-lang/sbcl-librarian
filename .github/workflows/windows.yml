@@ -20,13 +20,13 @@ jobs:
           install: mingw-w64-x86_64-gcc make diffutils git cmake
       - name: install host sbcl
         shell: pwsh
-        working-directory: ./sbcl
+        working-directory: ..\sbcl
         run: |
           choco install sbcl -source tools-for-build
       - name: build sbcl and libsbcl
         env:
           SBCL_HOME: "/c/Program Files/Steel Bank Common Lisp/1.4.14"
-        working-directory: ./sbcl
+        working-directory: ..\sbcl
         run: |
           PATH=$PATH:"/c/Program Files/Steel Bank Common Lisp/1.4.14"
           export PATH
@@ -38,5 +38,5 @@ jobs:
         working-directory: examples/smart-libraries
         run:
           mkdir build
-          ../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libbase.lisp
-          ../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate.lisp
+          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libbase.lisp
+          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate.lisp

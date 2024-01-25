@@ -6,8 +6,8 @@
 (sbcl-librarian:define-handle-type quil-program-type "qvm_quil_program")
 
 (sbcl-librarian:define-enum-type error-type "miniqvm_err_t"
-  ("ERR_SUCCESS" 0)
-  ("ERR_FAIL" 1))
+  ("MINIQVM_ERR_SUCCESS" 0)
+  ("MINIQVM_ERR_FAIL" 1))
 (sbcl-librarian:define-error-map error-map error-type 0
   ((t (lambda (condition)
         (declare (ignore condition))

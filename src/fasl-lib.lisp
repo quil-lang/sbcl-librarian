@@ -64,6 +64,10 @@ a valid C identifier."
         :do (setf name (substitute #\_ c name))
         :finally (return name)))
 
+(defun fasl-library-load-function-name (library)
+  "Returns the name of the C function for loading the embedded FASLs for LIBRARY."
+  (concatenate 'string (library-c-name library) "_load"))
+
 (defun create-fasl-loader-source-file (library systems directory)
   "Create a C source file in the DIRECTORY that embeds each of the FASL
 bundle files for non-required SYSTEMS using incbin and exports a
@@ -99,9 +103,9 @@ symbols defined in SYSTEMS. The C functions to perform
             :do (format stream "INCBIN(~A_fasl, \"~A\");~%" c-name fasl-filename))
       (terpri stream)
       (progn
-        (let ((function-name (concatenate 'string (library-c-name library) "_load")))
+        (let ((function-name (fasl-library-load-function-name library)))
           #+win32
-          (format stream "~A~%" *windows-export-linkage*)
+          (format stream "~A~%" (library-function-linkage library))
           (format stream "void ~A(void) {~%" function-name)
           #+win32
           (let ((buf-size 1024))

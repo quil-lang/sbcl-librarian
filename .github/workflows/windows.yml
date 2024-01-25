@@ -38,7 +38,7 @@ jobs:
       - name: install quicklisp
         run: |
           curl -O https://beta.quicklisp.org/quicklisp.lisp
-          ../sbcl/run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install :path (uiop:parse-native-namestring \"${{ github.workspace }}\quicklisp\"))" --eval "(quit)"
+          ../sbcl/run-sbcl.sh --load quicklisp.lisp --eval "(require \"uiop\")" --eval "(quicklisp-quickstart:install :path (uiop:parse-native-namestring \"${{ github.workspace }}\quicklisp\"))" --eval "(quit)"
       - name: build example
         working-directory: examples/smart-libraries
         run: |

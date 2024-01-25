@@ -13,10 +13,13 @@
         (declare (ignore condition))
         (return-from error-map 1)))))
 
+(defun amplitudes (qvm)
+  (format nil "~A" (qvm::amplitudes qvm)))
+
 (sbcl-librarian:define-library libminiqvm (:error-map error-map
                                            :function-linkage "MINIQVM_"
                                            :function-prefix "miniqvm_")
   (:type qvm-type quil-program-type error-type)
   (:function
    (("run_program" qvm:run-program) qvm-type ((num-qubits :int) (program quil-program-type)))
-   (("amplitudes" qvm::amplitudes) :string ((qvm qvm-type)))))
+   (("amplitudes" amplitudes) :string ((qvm qvm-type)))))

@@ -46,9 +46,9 @@ skipping those for already-loaded systems."
                           (list target-system)))
          (*base-library-name* base-library-name))
     (compile-bundle-system-with-dependencies target-system build-directory)
-    (build-bindings library build-directory :omit-init-function t)
+    (build-bindings library build-directory :omit-init-function t :fasl-lib-p t)
     (create-incbin-source-file build-directory)
-    (create-fasl-loader-source-file systems build-directory)
+    (create-fasl-loader-source-file library systems build-directory)
     (create-cmakelists-file library systems build-directory)))
 
 (defun create-incbin-source-file (directory)
@@ -64,13 +64,13 @@ a valid C identifier."
         :do (setf name (substitute #\_ c name))
         :finally (return name)))
 
-(defun create-fasl-loader-source-file (systems directory)
+(defun create-fasl-loader-source-file (library systems directory)
   "Create a C source file in the DIRECTORY that embeds each of the FASL
-bundle files for non-required SYSTEMS using incbin and defines a
-shared library constructor that requires any required SYSTEMs and then
-loads the embedded FASL bundles while also initializing any alien
-callable symbols defined in SYSTEMS. The C functions to perform
-requiring and loading are included from *BASE-LIBRARY-NAME*.h."
+bundle files for non-required SYSTEMS using incbin and exports a
+function that requires any required SYSTEMs and then loads the
+embedded FASL bundles while also initializing any alien callable
+symbols defined in SYSTEMS. The C functions to perform
+-requiring and loading are included from *BASE-LIBRARY-NAME*.h."
   (flet ((write-load-calls (stream indent-size)
            (loop :for system :in (remove-if-not #'system-loadable-from-fasl-p systems)
                  :for system-name := (asdf:component-name system)
@@ -98,45 +98,23 @@ requiring and loading are included from *BASE-LIBRARY-NAME*.h."
             :for fasl-filename := (system-fasl-bundle-filename system)
             :do (format stream "INCBIN(~A_fasl, \"~A\");~%" c-name fasl-filename))
       (terpri stream)
-      #-win32
       (progn
-        (format stream "__attribute__((constructor))~%")
-        (format stream "void ~A(void) {~%" *fasl-loader-constructor-name*)
+        (let ((function-name (concatenate 'string (library-c-name library) "_load")))
+          #+win32
+          (format stream "~A~%" *windows-export-linkage*)
+          (format stream "void ~A(void) {~%" function-name)
+          #+win32
+          (let ((buf-size 1024))
+            (format stream "    char dll_path[~D];~%" buf-size)
+            (format stream "    HMODULE dll_mod;~%")
+            (format stream "    GetModuleHandleEx(~%")
+            (format stream "        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,~%")
+            (format stream "        ~A,~%" function-name)
+            (format stream "        &dll_mod);~%")
+            (format stream "    GetModuleFileNameA(dll_mod, dll_path, ~D);~%" buf-size)
+            (format stream "    lisp_load_shared_object(dll_path);~%")))
         (write-require-calls stream 4)
         (write-load-calls stream 4)
-        (format stream "}"))
-      #+win32
-      (let ((buf-size 1024))
-        (format stream "BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {~%")
-        (format stream "    if (fdwReason == DLL_PROCESS_ATTACH) {~%")
-        ;; On Windows, INITIALIZE-ALIEN-CALLABLE-SYMBOL can only find
-        ;; a symbol if it belongs to the library containing the SBCL
-        ;; runtime or if it belongs to one of
-        ;; SB-SYS:*SHARED-OBJECTS*[^1]. So, we get the runtime path of
-        ;; the currently running DLL using GetModuleFileNameA and then
-        ;; load that path into the Lisp image using
-        ;; LOAD-SHARED-OBJECT, which will add the DLL's handle to
-        ;; *SHARED-OBJECTS*.
-        ;;
-        ;; TODO: Note that LOAD-SHARED-OBJECT calls LoadLibrary under
-        ;; the hood, which is technically not safe to call from
-        ;; DllMain[^2]. Since the DLL that we are loading has already
-        ;; been loaded (we're running its DllMain), LoadLibrary just
-        ;; bumps the reference count for the DLL and does not reinvoke
-        ;; DllMain[^3]. Nevertheless, a more robust solution should
-        ;; add the DLL handle to *SHARED-OBJECTS* without calling
-        ;; LOAD-SHARED-OBJECT.
-        ;;
-        ;; [^1]: https://github.com/sbcl/sbcl/blob/sbcl-2.4.0/src/code/win32-foreign-load.lisp#L91
-        ;; [^2]: https://learn.microsoft.com/en-us/windows/win32/dlls/dllmain
-        ;; [^3]: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya
-        (format stream "        char buf[~D];~%" buf-size)
-        (format stream "        GetModuleFileNameA(hinstDLL, buf, ~D);~%" buf-size)
-        (format stream "        lisp_load_shared_object(buf);~%")
-        (write-require-calls stream 8)
-        (write-load-calls stream 8)
-        (format stream "    }~%")
-        (format stream "    return TRUE;~%")
         (format stream "}")))))
 
 (defun create-cmakelists-file (library systems directory)

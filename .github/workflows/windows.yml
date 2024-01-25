@@ -35,6 +35,10 @@ jobs:
           ./make.sh --xc-host='sbcl --lose-on-corruption --disable-ldb --disable-debugger'
           ./make-shared-library.sh
           mv src/runtime/libsbcl.so src/runtime/libsbcl.dll
+      - name: install quicklisp
+        run: |
+          curl -O https://beta.quicklisp.org/quicklisp.lisp
+          ../sbcl/run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(quit)"
       - name: build example
         working-directory: examples/smart-libraries
         run: |

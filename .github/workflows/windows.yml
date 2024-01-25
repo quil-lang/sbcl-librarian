@@ -21,13 +21,13 @@ jobs:
           install: mingw-w64-ucrt-x86_64-toolchain diffutils git cmake
       - name: install host sbcl
         shell: pwsh
-        working-directory: ${{ github.workspace }}/sbcl
+        working-directory: ..\sbcl
         run: |
           choco install sbcl -source tools-for-build
       - name: build sbcl and libsbcl
         env:
           SBCL_HOME: "/c/Program Files/Steel Bank Common Lisp/1.4.14"
-        working-directory: ${{ github.workspace }}/sbcl
+        working-directory: ..\sbcl
         run: |
           PATH=$PATH:"/c/Program Files/Steel Bank Common Lisp/1.4.14"
           export PATH

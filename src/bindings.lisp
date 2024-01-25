@@ -109,7 +109,7 @@
                                         :linkage linkage)))
       (when fasl-lib-p
         (format stream "~A;~%~%"
-                (c-function-declaration (fasl-lib-load-function-name library)':void '()
+                (c-function-declaration (fasl-library-load-function-name library)':void '()
                                         :datap nil
                                         :linkage linkage)))
       (format stream "#endif~%"))

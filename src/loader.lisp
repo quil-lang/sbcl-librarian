@@ -4,8 +4,12 @@
 (in-package #:sbcl-librarian)
 
 (defun lisp-load (pathname)
-  (let ((*initialize-callables-p* t))
-    (load pathname)))
+  (let ((*initialize-callables-p* t)
+        (initial-thread sb-thread::*initial-thread*))
+    (setf sb-thread::*initial-thread* sb-thread:*current-thread*)
+    (unwind-protect
+         (load pathname)
+      (setf sb-thread::*initial-thread* initial-thread))))
 
 (defun load-array-as-system  (data size system-name)
   "Assuming DATA is a pointer to an array of SIZE bytes constituting a
@@ -21,8 +25,7 @@ loading."
 					    i)
 			    stream))
       (finish-output stream)
-      (let ((sbcl-librarian::*initialize-callables-p* t))
-        (load filename)))
+      (lisp-load filename))
     (asdf:register-immutable-system system-name)
     (values)))
 

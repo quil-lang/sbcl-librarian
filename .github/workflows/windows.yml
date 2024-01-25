@@ -43,5 +43,5 @@ jobs:
         working-directory: examples/smart-libraries
         run: |
           mkdir build
-          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libbase.lisp
-          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate.lisp
+          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load "~/quicklisp/setup.lisp" --load generate-libbase.lisp
+          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load "~/quicklisp/setup.lisp" --load generate.lisp

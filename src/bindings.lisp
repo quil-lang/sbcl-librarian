@@ -78,7 +78,7 @@
                                   :linkage linkage))
   (when constructor-p
     #-win32
-    (format stream "  Dl_info info; dladdr(~A, &info); char *core = info.dli_fname;~%" name)
+    (format stream "  Dl_info info; dladdr(~A, &info); char *core = (void *) info.dli_fname;~%" name)
     #+win32
     (let ((buf-size 1024))
       (format stream "  HMODULE dll_mod; char dll_path[~D];~%" buf-size)
@@ -119,7 +119,7 @@
         (write-api-to-header api linkage stream))
       (unless omit-init-function
         (format stream "~A;~%~%"
-                (c-function-declaration 'init ':int '((core :string))
+                (c-function-declaration 'init ':int (and (not init-is-constructor-p) '((core :string)))
                                         :datap nil
                                         :linkage linkage)))
       (format stream "#endif~%"))

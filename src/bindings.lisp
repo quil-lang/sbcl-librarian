@@ -73,9 +73,21 @@
   (when constructor-p
     (format stream "__attribute__((constructor))~%"))
   (format stream "~A {~%"
-          (c-function-declaration name ':int '((core :string))
+          (c-function-declaration name ':int (and (not constructor-p) '((core :string)))
                                   :datap nil
                                   :linkage linkage))
+  (when constructor-p
+    #-win32
+    (format stream "  Dl_info info; dladdr(~A, &info); char *core = info.dli_fname;~%" name)
+    #+win32
+    (let ((buf-size 1024))
+      (format stream "  HMODULE dll_mod; char dll_path[~D];~%" buf-size)
+      (format stream "  GetModuleHandleEx(~%")
+      (format stream "    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,~%")
+      (format stream "    ~A,~%" name)
+      (format stream "    &dll_mod);")
+      (format stream "  GetModuleFileNameA(dll_mod, dll_path, ~D);~%" buf-size)
+      (format stream "  char *core = dll_path;")))
   (format stream "  static int initialized = 0;~%")
   (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\", ~{\"~a\"~^, ~}};~%"
           initialize-lisp-args)
@@ -87,7 +99,7 @@
 
 (defun build-bindings (library directory &key (omit-init-function nil)
                                               (initialize-lisp-args nil)
-                                              (init-is-constructor nil))
+                                              (init-is-constructor-p nil))
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
@@ -115,9 +127,15 @@
     (with-open-file (stream (merge-pathnames source-name directory)
                             :direction :output
                             :if-exists :supersede)
+      (when init-is-constructor-p
+        #-win32
+        (format stream "#include <dlfcn.h>~%")
+        #+win32
+        (format stream "~@{#include<~A>~%~}" "Windows" "Process" "psapi.h")
+        (terpri stream))
       (format stream "#define ~A~%~%" build-flag)
       (format stream "#include ~s~%~%" header-name)
       (dolist (api (library-apis library))
         (write-api-to-source api stream))
       (unless omit-init-function
-        (write-init-function 'init linkage stream initialize-lisp-args init-is-constructor)))))
+        (write-init-function 'init linkage stream initialize-lisp-args init-is-constructor-p)))))

@@ -63,10 +63,14 @@ NOTE: Here, the APIs must already be defined elsewhere."
                               (prefix-name (api-function-prefix api) (first spec)))
                             things))))
 
-(defun build-core-and-die (library directory &key compression)
+(defun build-core-and-die (library directory &key compression
+                                                  (bundled-filename nil bundled-filename-supplied-p))
   (let* ((c-name (library-c-name library))
          (core-name (concatenate 'string c-name ".core")))
+    (when bundled-filename-supplied-p
+      (setf (sb-alien:extern-alien "sbcl_runtime" (* t)) (sb-alien:make-alien-string bundled-filename)))
     (sb-ext:save-lisp-and-die
      (merge-pathnames core-name directory)
      :compression compression
-     :callable-exports (callable-exports library))))
+     :callable-exports (callable-exports library)
+     :executable bundled-filename-supplied-p)))

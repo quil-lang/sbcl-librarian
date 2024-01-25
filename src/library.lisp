@@ -70,7 +70,9 @@ NOTE: Here, the APIs must already be defined elsewhere."
     (when bundled-filename-supplied-p
       (setf (sb-alien:extern-alien "sbcl_runtime" (* t)) (sb-alien:make-alien-string bundled-filename)))
     (sb-ext:save-lisp-and-die
-     (merge-pathnames core-name directory)
+     (merge-pathnames (if bundled-filename-supplied-p
+                          bundled-filename
+                          core-name) directory)
      :compression compression
      :callable-exports (callable-exports library)
      :executable bundled-filename-supplied-p)))

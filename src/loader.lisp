@@ -8,7 +8,9 @@
         (initial-thread sb-thread::*initial-thread*))
     (setf sb-thread::*initial-thread* sb-thread:*current-thread*)
     (unwind-protect
-         (load pathname)
+         (locally
+             (declare (sb-ext:muffle-conditions sb-kernel:redefinition-warning))
+           (load pathname))
       (setf sb-thread::*initial-thread* initial-thread))))
 
 (defun load-array-as-system  (data size system-name)

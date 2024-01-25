@@ -18,7 +18,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
-          install: mingw-w64-ucrt-x86_64-toolchain diffutils git cmake
+          install: mingw-w64-ucrt-x86_64-toolchain make diffutils git cmake
       - name: install host sbcl
         shell: pwsh
         working-directory: ..\sbcl

@@ -4,3 +4,5 @@
 
 (sbcl-librarian:create-fasl-library-cmake-project "libminiquilc" libminiquilc:libminiquilc "build/libminiquilc" :base-library-name "libbase")
 (sbcl-librarian:create-fasl-library-cmake-project "libminiqvm" libminiqvm:libminiqvm "build/libminiqvm" :base-library-name "libbase")
+
+(uiop:quit)

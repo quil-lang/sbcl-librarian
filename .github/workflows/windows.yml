@@ -34,7 +34,6 @@ jobs:
           ./make.sh --xc-host='sbcl --lose-on-corruption --disable-ldb --disable-debugger'
           ./make-shared-library.sh
           mv src/runtime/libsbcl.so src/runtime/libsbcl.dll
-      - uses: actions/checkout@v1
       - name: build example
         working-directory: examples/smart-libraries
         run:

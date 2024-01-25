@@ -66,9 +66,12 @@
                                              :function-prefix (api-function-prefix api)
                                              :error-map (api-error-map api))))))))))
 
-(defun write-init-function (name linkage stream &optional (initialize-lisp-args nil))
+(defun write-init-function (name linkage stream &optional (initialize-lisp-args nil)
+                                                          (constructor-p nil))
   (terpri stream)
   (format stream "extern int initialize_lisp(int argc, char **argv);~%~%")
+  (when constructor-p
+    (format stream "__attribute__((constructor))~%"))
   (format stream "~A {~%"
           (c-function-declaration name ':int '((core :string))
                                   :datap nil
@@ -83,7 +86,8 @@
   (format stream "  return 0; }"))
 
 (defun build-bindings (library directory &key (omit-init-function nil)
-                                              (initialize-lisp-args nil))
+                                              (initialize-lisp-args nil)
+                                              (init-is-constructor nil))
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
@@ -116,4 +120,4 @@
       (dolist (api (library-apis library))
         (write-api-to-source api stream))
       (unless omit-init-function
-        (write-init-function 'init linkage stream initialize-lisp-args)))))
+        (write-init-function 'init linkage stream initialize-lisp-args init-is-constructor)))))

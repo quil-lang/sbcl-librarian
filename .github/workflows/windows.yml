@@ -15,6 +15,7 @@ jobs:
         with:
           repository: 'sbcl/sbcl'
           ref: 'sbcl-2.4.0'
+          path: sbcl
       - uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -43,12 +44,15 @@ jobs:
         with:
           repository: 'quil-lang/quilc'
           submodules: recursive
+          path: quilc
       - uses: actions/checkout@v4
         with:
           repository: 'quil-lang/qvm'
+          path: qvm
       - uses: actions/checkout@v4
         with:
           repository: 'quil-lang/magicl'
+          path: magicl
       - name: build example
         working-directory: examples/smart-libraries
         run: |

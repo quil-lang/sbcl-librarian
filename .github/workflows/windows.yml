@@ -10,8 +10,8 @@ jobs:
         shell: msys2 {0}
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           repository: 'sbcl/sbcl'
           ref: 'sbcl-2.4.0'
@@ -39,14 +39,14 @@ jobs:
         run: |
           curl -O https://beta.quicklisp.org/quicklisp.lisp
           ../sbcl/run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
         with:
           repository: 'quil-lang/quilc'
           submodules: recursive
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
         with:
           repository: 'quil-lang/qvm'
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
         with:
           repository: 'quil-lang/magicl'
       - name: build example

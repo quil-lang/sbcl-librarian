@@ -20,7 +20,7 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: mingw-w64-ucrt-x86_64-toolchain make diffutils git cmake mingw-w64-lapack libffi
+          install: mingw-w64-ucrt-x86_64-toolchain make diffutils git cmake mingw-w64-ucrt-x86_64-lapack libffi
       - name: install host sbcl
         shell: pwsh
         working-directory: sbcl

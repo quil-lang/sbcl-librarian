@@ -1,3 +1,5 @@
+(push (uiop:getcwd) ql:*local-project-directories*)
+
 (asdf:load-system :sbcl-librarian)
 (asdf:load-system :libminiquilc)
 (asdf:load-system :libminiqvm)

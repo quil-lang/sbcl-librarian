@@ -1,4 +1,4 @@
-(push (uiop:pathname-parent-directory-pathname (uiop:getcwd)) ql:*local-project-directories*)
+(push (uiop:pathname-parent-directory-pathname (uiop:pathname-parent-directory-pathname (uiop:getcwd))) ql:*local-project-directories*)
 
 (asdf:load-system :libbase)
 (asdf:load-system :sbcl-librarian)

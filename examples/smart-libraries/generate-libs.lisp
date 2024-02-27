@@ -1,4 +1,4 @@
-(push (uiop:getcwd) ql:*local-project-directories*)
+(push (uiop:pathname-parent-directory-pathname (uiop:getcwd)) ql:*local-project-directories*)
 
 (asdf:load-system :sbcl-librarian)
 (asdf:load-system :libminiquilc)

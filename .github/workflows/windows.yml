@@ -38,10 +38,10 @@ jobs:
       - name: install quicklisp
         run: |
           curl -O https://beta.quicklisp.org/quicklisp.lisp
-          ../sbcl/run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(quit)"
+          ../sbcl/run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
       - name: build example
         working-directory: examples/smart-libraries
         run: |
           mkdir build
-          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load "~\quicklisp\setup.lisp" --load generate-libbase.lisp
-          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load "~\quicklisp\setup.lisp" --load generate.lisp
+          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libbase.lisp
+          ../../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate.lisp

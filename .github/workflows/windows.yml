@@ -57,11 +57,27 @@ jobs:
         working-directory: examples/smart-libraries
         env:
           LIBRARY_PATH: ${{ github.workspace }}/sbcl/src/runtime
+          CMAKE_LIBRARY_PATH: ${{ github.workspace }}/sbcl-librarian/examples/smart-libraries/build/libbase
+          C_INCLUDE_PATH: ${{ github.workspace }}/sbcl-librarian/examples/smart-libraries/build/libbase
         run: |
           mkdir build
           ../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libbase.lisp
           ../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libs.lisp
           pushd build/libbase
           gcc -fPIC -shared -Wall -o libbase.dll libbase.c -lsbcl
+          ls
+          popd
+          pushd build/libminiquilc
+          mkdir build
+          cd build
+          cmake ..
+          make
+          ls
+          popd
+          pushd build/libminiqvm
+          mkdir build
+          cd build
+          cmake ..
+          make
           ls
           popd

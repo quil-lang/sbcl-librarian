@@ -104,8 +104,6 @@ symbols defined in SYSTEMS. The C functions to perform
       (terpri stream)
       (progn
         (let ((function-name (fasl-library-load-function-name library)))
-          #+win32
-          (format stream "~A~%" (library-function-linkage library))
           (format stream "void ~A(void) {~%" function-name)
           #+win32
           (let ((buf-size 1024))

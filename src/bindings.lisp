@@ -10,7 +10,7 @@
   "__attribute__ ((visibility (\"default\")))")
 
 (defun write-linkage-macro (linkage build-name stream)
-  (let ((windows "_WIN64")
+  (let ((windows "_WIN32")
         (elf "__ELF__"))
     (format stream "#if defined(~A)~%" build-name)
     (format stream "#  if defined(~A)~%" windows)

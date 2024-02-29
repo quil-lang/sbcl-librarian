@@ -55,7 +55,11 @@ jobs:
           path: magicl
       - name: build example
         working-directory: examples/smart-libraries
+        env:
+          LIBRARY_PATH: ${{ github.workspace }}/sbcl/src/runtime
         run: |
           mkdir build
           ../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libbase.lisp
           ../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libs.lisp
+          pushd build/libbase
+          gcc -fPIC -shared -Wall -o libbase.dll libbase.c -lsbcl

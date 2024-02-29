@@ -68,6 +68,9 @@ jobs:
           ls
           popd
           pushd build/libminiquilc
+          cat libminiquilc.h
+          cat libminiquilc.c
+          cat fasl_loader.c
           mkdir build
           cd build
           cmake -G "MSYS Makefiles" -DCMAKE_PREFIX_PATH=$MSYSTEM_PREFIX -DCMAKE_INSTALL_PREFIX=$MSYSTEM_PREFIX ..

@@ -35,4 +35,5 @@ loading."
   (:function
    (("lisp_load" lisp-load) :void ((pathname :string)))
    (("lisp_load_array_as_system" load-array-as-system) :void ((data :pointer) (size :int) (system-name :string)))
-   (("lisp_require" require) :void ((module-name :string)))))
+   (("lisp_require" require) :void ((module-name :string)))
+   (("lisp_load_shared_object" load-shared-object) :void ((pathname :string)))))

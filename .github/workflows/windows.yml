@@ -63,3 +63,5 @@ jobs:
           ../../sbcl/run-sbcl.sh --dynamic-space-size 8192 --load generate-libs.lisp
           pushd build/libbase
           gcc -fPIC -shared -Wall -o libbase.dll libbase.c -lsbcl
+          ls
+          popd

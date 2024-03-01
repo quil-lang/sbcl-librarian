@@ -145,6 +145,6 @@ library and its header file."
       #-win32
       (format stream "target_link_libraries(~A PRIVATE ${BASE_LIBRARY})~%" c-name)
       #+win32
-      (format stream "target_compile_options(~A PRIVATE -l~%A)~%" c-name *base-library-name*)
+      (format stream "target_compile_options(~A PRIVATE -l~A)~%" c-name *base-library-name*)
       (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)
       (format stream "install(FILES ~A.h TYPE INCLUDE)~%" c-name))))

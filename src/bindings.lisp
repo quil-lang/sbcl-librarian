@@ -22,7 +22,7 @@
     (format stream "# endif~%")
     (format stream "#else~%")
     (format stream "#  if defined(~A)~%" windows)
-    (format stream "#    define ~A ~A~%" linkage *windows-import-linkage*)
+    (format stream "#    define ~A~%" linkage)
     (format stream "#  else~%")
     (format stream "#  define ~A~%" linkage)
     (format stream "#  endif~%")

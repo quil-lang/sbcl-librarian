@@ -18,11 +18,11 @@ shared library constructor that loads the embedded FASLs.")
 (defparameter *cmake-minimum-required* "3.12"
   "The minimum version of CMake required to run the generated project.")
 
-(defparameter *base-library-name* "libsbcl"
-  "The name of the shared library (minus the file suffix) containing the
+(defparameter *base-library-name* "sbcl"
+  "The name of the shared library (minus the file suffix and 'lib' prefix) containing the
 SBCL runtime.")
 
-(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name "libsbcl"))
+(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name "sbcl"))
   "Generate a CMake project in DIRECTORY for a shared library that, when
 loaded into a process that has already initialized the SBCL runtime,
 adds the C symbols for LIBRARY to the current process's symbol table
@@ -91,7 +91,7 @@ symbols defined in SYSTEMS. The C functions to perform
     (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
       #+win32
       (format stream "#include <Windows.h>~%")
-      (format stream "#include \"~A.h\"~%" *base-library-name*)
+      (format stream "#include \"lib~A.h\"~%" *base-library-name*)
       (terpri stream)
       (format stream "#define INCBIN_STYLE INCBIN_STYLE_SNAKE~%")
       (format stream "#define INCBIN_PREFIX~%")
@@ -136,12 +136,15 @@ library and its header file."
             :for fasl-filename := (system-fasl-bundle-filename system)
             :do (format stream "configure_file(${CMAKE_CURRENT_SOURCE_DIR}/~A ${CMAKE_CURRENT_BINARY_DIR}/~A COPYONLY)~%"
                         fasl-filename fasl-filename))
-      #+win32
+      #+nil
       (format stream "set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})~%")
-      (format stream "find_library(BASE_LIBRARY NAMES ~A${CMAKE_SHARED_LIBRARY_SUFFIX})~%" *base-library-name*)
-      (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+win32 "${BASE_LIBRARY}")
+      #+nil
+      (format stream "find_library(BASE_LIBRARY NAMES lib~A${CMAKE_SHARED_LIBRARY_SUFFIX})~%" *base-library-name*)
+      (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+nil "${BASE_LIBRARY}")
       (format stream "set_target_properties(~A PROPERTIES PREFIX \"\")~%" c-name)
       #-win32
       (format stream "target_link_libraries(~A PRIVATE ${BASE_LIBRARY})~%" c-name)
+      #+win32
+      (format stream "target_compile_options(~A PRIVATE -l~%A)~%" c-name *base-library-name*)
       (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)
       (format stream "install(FILES ~A.h TYPE INCLUDE)~%" c-name))))

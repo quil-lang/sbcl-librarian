@@ -74,7 +74,7 @@ jobs:
           mkdir build
           cd build
           cmake -G "MSYS Makefiles" --trace -DCMAKE_PREFIX_PATH=$MSYSTEM_PREFIX -DCMAKE_INSTALL_PREFIX=$MSYSTEM_PREFIX ..
-          make
+          make VERBOSE=1
           make install
           ls
           popd
@@ -82,7 +82,7 @@ jobs:
           mkdir build
           cd build
           cmake -G "MSYS Makefiles" --trace -DCMAKE_PREFIX_PATH=$MSYSTEM_PREFIX -DCMAKE_INSTALL_PREFIX=$MSYSTEM_PREFIX ..
-          make
+          make VERBOSE=1
           make install
           ls
           popd

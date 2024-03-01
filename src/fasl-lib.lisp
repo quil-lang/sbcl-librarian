@@ -136,11 +136,10 @@ library and its header file."
             :for fasl-filename := (system-fasl-bundle-filename system)
             :do (format stream "configure_file(${CMAKE_CURRENT_SOURCE_DIR}/~A ${CMAKE_CURRENT_BINARY_DIR}/~A COPYONLY)~%"
                         fasl-filename fasl-filename))
-      #+nil
+      #+win32
       (format stream "set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})~%")
-      #+nil
       (format stream "find_library(BASE_LIBRARY NAMES lib~A${CMAKE_SHARED_LIBRARY_SUFFIX})~%" *base-library-name*)
-      (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+nil "${BASE_LIBRARY}")
+      (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+win32 "${BASE_LIBRARY}")
       (format stream "set_target_properties(~A PROPERTIES PREFIX \"\")~%" c-name)
       #-win32
       (format stream "target_link_libraries(~A PRIVATE ${BASE_LIBRARY})~%" c-name)

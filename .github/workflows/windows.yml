@@ -86,5 +86,5 @@ jobs:
           make install
           ls
           popd
-          gcc -Wall -o run_2q_quil_program run_2q_quil_program.c -lbase -lminiquilc -lminiqvm
+          gcc -Wall -o run_2q_quil_program run_2q_quil_program.c -lbase -lminiquilc -lminiqvm -Lbuild/libminiquilc/build -Lbuild/libminiqvm/build
           ls

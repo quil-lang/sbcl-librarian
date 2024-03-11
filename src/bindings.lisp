@@ -111,7 +111,7 @@
         (format stream "~A;~%~%"
                 (c-function-declaration (fasl-library-load-function-name library)':void '()
                                         :datap nil
-                                        :linkage linkage)))
+                                        :linkage nil)))
       (format stream "#endif~%"))
     ;; source
     (with-open-file (stream (merge-pathnames source-name directory)

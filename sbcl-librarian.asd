@@ -9,6 +9,7 @@
   :serial t
   :pathname "src/"
   :components ((:file "package")
+               (:file "asdf-utils")
                (:file "types")
                (:file "function")
                (:file "api")
@@ -17,7 +18,8 @@
                (:file "python-bindings")
                (:file "handles")
                (:file "loader")
-               (:file "environment")))
+               (:file "environment")
+               (:file "fasl-lib")))
 
 (asdf:defsystem #:sbcl-librarian/project
   :description "Project skeleton builder for SBCL-LIBRARIAN"

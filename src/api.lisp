@@ -4,7 +4,7 @@
 
 (defgeneric error-map-type (error-map))
 
-(defmacro define-error-map (name error-type no-error bindings)
+(defmacro define-error-map (name error-type no-error fatal-error bindings)
   "Define an error map with the indicated NAME. 
 
 Error maps control how Lisp errors get translated to error codes at exported function boundaries. There are three pieces involved:
@@ -22,7 +22,9 @@ All Lisp calls will get wrapped in a block named NAME, within which a HANDLER-BI
      (defmethod error-map-type ((error-map (eql ',name)))
        ',error-type)
      (defmethod error-map-success-code ((error-map (eql ',name)))
-       ,no-error)))
+       ,no-error)
+     (defmethod error-map-fatal-code ((error-map (eql ',name)))
+       ,fatal-error)))
 
 (defun c-to-lisp-name (c-name)
   (nsubstitute #\- #\_ (string-upcase c-name)))

@@ -44,7 +44,7 @@
            (destructuring-bind (name result-type typed-lambda-list) spec
              (format stream "~A;~%"
                      (c-function-declaration name result-type typed-lambda-list
-                                             :datap t
+                                             :datap nil
                                              :linkage linkage
                                              :externp t
                                              :function-prefix (api-function-prefix api)
@@ -61,7 +61,7 @@
            (destructuring-bind (name result-type typed-lambda-list) spec
              (format stream "~A;~%"
                      (c-function-declaration name result-type typed-lambda-list
-                                             :datap t
+                                             :datap nil
                                              :externp nil
                                              :function-prefix (api-function-prefix api)
                                              :error-map (api-error-map api))))))))))

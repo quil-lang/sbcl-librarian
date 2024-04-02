@@ -4,7 +4,9 @@
 
 (defgeneric error-map-type (error-map))
 
-(defmacro define-error-map (name error-type no-error bindings)
+(defgeneric error-map-fatal-code (error-map))
+
+(defmacro define-error-map (name error-type (&key no-error fatal-error) bindings)
   "Define an error map with the indicated NAME. 
 
 Error maps control how Lisp errors get translated to error codes at exported function boundaries. There are three pieces involved:
@@ -22,13 +24,45 @@ All Lisp calls will get wrapped in a block named NAME, within which a HANDLER-BI
      (defmethod error-map-type ((error-map (eql ',name)))
        ',error-type)
      (defmethod error-map-success-code ((error-map (eql ',name)))
-       ,no-error)))
+       ,no-error)
+     (defmethod error-map-fatal-code ((error-map (eql ',name)))
+       ,fatal-error)))
 
 (defun c-to-lisp-name (c-name)
   (nsubstitute #\- #\_ (string-upcase c-name)))
 
 (defun lisp-to-c-name (lisp-name)
   (nsubstitute #\_ #\- (string-downcase (symbol-name lisp-name))))
+
+(defun callable-name-with-c-prefix (callable-name prefix)
+  "Every alien callable function is associated with a callable name. A
+callable name is a two-element list: the first element is a string
+naming a C symbol, and the second element is a symbol naming a Lisp
+function. During runtime initialization, the memory address of the
+callable name's C symbol is populated with a pointer to a dynamically
+generated trampoline function wrapping the callable name's Lisp
+function.
+
+A callable name can also be referred to by one of its two elements
+alone, in which case the other element is implicitly defined by
+substituting underscores in the string for hyphens in the symbol, or
+vice versa.
+
+This function takes a callable name in any one of its three formats
+and returns a new callable name where the string naming the C symbol
+is prefixed by PREFIX, leaving the symbol naming the Lisp function unchanged.
+
+For example, if the prefix is \"_\":
+
+(\"foo_bar\" FOO-BAR) = \"foo_bar\" = FOO-BAR
+all become
+(\"_foo_bar\" FOO-BAR)"
+  (multiple-value-bind (c-name lisp-name)
+      (etypecase callable-name
+        (list (values (first callable-name) (second callable-name)))
+        (symbol (values (lisp-to-c-name callable-name) callable-name))
+        (string (values callable-name (c-to-lisp-name callable-name))))
+    (list (concatenate 'string prefix c-name) lisp-name)))
 
 (defun coerce-to-c-name (name)
   (typecase name

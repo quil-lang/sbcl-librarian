@@ -10,16 +10,23 @@
                            :function-prefix function-prefix
                            :error-map error-map)
     (format nil
-            "~a = CFUNCTYPE(~a, ~{~a~^, ~})(c_void_p.in_dll(~a, '~a').value)"
+            "~a = ~a.~a
+~a.restype = ~a
+~a.argtypes = [~{~a~^, ~}]"
+            ;; First line
+            (coerce-to-c-name callable-name)
+            library-name
+            (coerce-to-c-name callable-name)
+            ;; Second line
             (coerce-to-c-name callable-name)
             (python-type return-type)
+            ;; Third line
+            (coerce-to-c-name callable-name)
             (append
              (loop :for (name type) :in typed-lambda-list
                    :collect (python-type type))
              (and result-type
-                  (list (format nil "POINTER(~a)" (python-type result-type)))))
-            library-name
-            (coerce-to-c-name callable-name))))
+                  (list (format nil "POINTER(~a)" (python-type result-type))))))))
 
 (defun write-default-python-header (library stream &optional (omit-init-call nil)
                                                              (library-path nil))

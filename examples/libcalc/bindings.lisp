@@ -5,11 +5,17 @@
 (define-handle-type expr-type "expr_type")
 (define-enum-type error-type "err_t"
   ("ERR_SUCCESS" 0)
-  ("ERR_FAIL" 1))
-(define-error-map error-map error-type 0
+  ("ERR_FAIL" 1)
+  ("ERR_FATAL" 2))
+(define-error-map error-map error-type (:no-error 0 :fatal-error 2)
   ((t (lambda (condition)
         (declare (ignore condition))
         (return-from error-map 1)))))
+
+(defun exhaust-heap ()
+  (sb-sys:without-gcing
+    (let ((test '()))
+      (loop (push 1 test)))))
 
 (define-api libcalc-api (:error-map error-map
                          :function-prefix "calc_")
@@ -27,7 +33,8 @@
    (simplify expr-type ((expr expr-type)))
    (parse expr-type ((source :string)))
    (expression-to-string :string ((expr expr-type)))
-   (remove-zeros expr-type ((expr expr-type)))))
+   (remove-zeros expr-type ((expr expr-type)))
+   (exhaust-heap :void ())))
 
 (define-aggregate-library libcalc (:function-linkage "CALC_API")
   sbcl-librarian:handles sbcl-librarian:environment libcalc-api)

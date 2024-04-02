@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v1
       with:
         repository: sbcl/sbcl
-        ref: ${{ matrix.arch == 'arm64' && 'sbcl-2.2.4' || 'x86-null-tn' }}
+        ref: ${{ matrix.arch == 'arm64' && 'sbcl-2.4.5' || 'x86-null-tn' }}
         path: sbcl
     - name: install host sbcl
       run: brew install sbcl
@@ -46,4 +46,4 @@ jobs:
         gcc -Wall -o example example.c -lcalc -lsbcl
         echo "(+ 1 2)" | ./example | tr -d '\n' | grep "> 3> "
         echo "(+ 1 2)" | python3 ./example.py | tr -d '\n' | grep "> 3> "
-   
+        python3 ./exhaust_heap.py | grep "returned to Python with error code 2 after heap exhaustion"

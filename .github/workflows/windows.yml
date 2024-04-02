@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v1
       with:
         repository: sbcl/sbcl
-        ref: sbcl-2.4.4
+        ref: sbcl-2.4.5
         path: sbcl
     - uses: msys2/setup-msys2@v2
       with:
@@ -54,3 +54,4 @@ jobs:
         cp libcalc.core $MSYSTEM_PREFIX/bin
         echo "(+ 1 2)" | ./example.exe | tr -d '\r\n' | grep "> 3> "
         echo "(+ 1 2)" | python ./example.py | tr -d '\r\n' | grep "> 3> "
+        python ./exhaust_heap.py | grep "returned to Python with error code 2 after heap exhaustion"

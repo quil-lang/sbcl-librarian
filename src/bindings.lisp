@@ -50,6 +50,7 @@
                                              :function-prefix (api-function-prefix api)
                                              :error-map (api-error-map api))))))))))
 
+
 (defun write-api-to-source (api stream)
   (dolist (spec (api-specs api))
     (destructuring-bind (kind &rest things) spec
@@ -60,11 +61,9 @@
          (dolist (spec things)
            (destructuring-bind (name result-type typed-lambda-list) spec
              (format stream "~A;~%"
-                     (c-function-declaration name result-type typed-lambda-list
-                                             :datap nil
-                                             :externp nil
-                                             :function-prefix (api-function-prefix api)
-                                             :error-map (api-error-map api))))))))))
+                     (c-function-definition name result-type typed-lambda-list
+                                            :function-prefix (api-function-prefix api)
+                                            :error-map (api-error-map api))))))))))
 
 (defun write-init-function (name linkage stream &optional (initialize-lisp-args nil))
   (terpri stream)
@@ -97,7 +96,7 @@
       (let ((guard (format nil "_~A_h" c-name)))       
         (format stream "#ifndef ~A~%" guard)
         (format stream "#define ~A~%~%" guard))
-      (when linkage        
+      (when linkage
         (write-linkage-macro linkage build-flag stream))
       (dolist (api (library-apis library))
         (write-api-to-header api linkage stream))

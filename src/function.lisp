@@ -28,7 +28,7 @@
   (multiple-value-bind (callable-name return-type typed-lambda-list result-type)
       (canonical-signature name result-type typed-lambda-list
                            :function-prefix function-prefix
-                           :error-map error-map)    
+                           :error-map error-map)
     (format nil "~:[~;extern ~]~@[~a ~]~a ~:[~a~;(*~a)~](~{~a~^, ~})"
             externp
             linkage
@@ -43,6 +43,15 @@
                      typed-lambda-list)
              (and result-type
                   (list (format nil "~a *result" (c-type result-type))))))))
+
+(defun c-function-definition (name result-type typed-lambda-list
+                              &key (function-prefix "")
+                                error-map)
+  (multiple-value-bind (callable-name return-type typed-lambda-list result-type)
+      (canonical-signature name result-type typed-lambda-list
+                           :function-prefix function-prefix
+                           :error-map error-map)
+    (format nil "#define OK~%")))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

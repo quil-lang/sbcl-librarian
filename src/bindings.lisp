@@ -63,7 +63,7 @@
              (format stream "~A;~%~A~%"
                      (c-function-declaration name result-type typed-lambda-list
                                              :datap t
-                                             :linkage linkage
+                                             :linkage nil
                                              :externp nil
                                              :function-prefix (concatenate 'string "_" (api-function-prefix api))
                                              :error-map (api-error-map api))

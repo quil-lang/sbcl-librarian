@@ -62,7 +62,16 @@
                      typed-lambda-list)
              (and result-type
                   (list (format nil "~a *result" (c-type result-type)))))
-            (format nil "    ~a();" (concatenate 'string "_" (coerce-to-c-name callable-name))))))
+            (format nil "    ~a(~{~a~^, ~});"
+                    (concatenate 'string "_" (coerce-to-c-name callable-name))
+                    (append
+                     (mapcar (lambda (item)
+                               (destructuring-bind (name type)
+                                   item
+                                 (lisp-to-c-name name)))
+                             typed-lambda-list)
+                     (and result-type
+                          (list "result")))))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

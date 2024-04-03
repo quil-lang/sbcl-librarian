@@ -60,7 +60,13 @@
         (:function
          (dolist (spec things)
            (destructuring-bind (name result-type typed-lambda-list) spec
-             (format stream "~A~%"
+             (format stream "~A;~%~A~%"
+                     (c-function-declaration (concatenate 'string "_" name) result-type typed-lambda-list
+                                             :datap t
+                                             :linkage linkage
+                                             :externp nil
+                                             :function-prefix (api-function-prefix api)
+                                             :error-map (api-error-map api))
                      (c-function-definition name result-type typed-lambda-list
                                             :function-prefix (api-function-prefix api)
                                             :error-map (api-error-map api))))))))))

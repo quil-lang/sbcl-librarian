@@ -51,7 +51,7 @@
       (canonical-signature name result-type typed-lambda-list
                            :function-prefix function-prefix
                            :error-map error-map)
-    (format nil "~a ~a(~{~a~^, ~}) {~%~%}"
+    (format nil "~a ~a(~{~a~^, ~}) {~%~%}~%"
             (c-type return-type)
             (coerce-to-c-name callable-name)
             (append

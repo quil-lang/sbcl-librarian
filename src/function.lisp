@@ -51,7 +51,17 @@
       (canonical-signature name result-type typed-lambda-list
                            :function-prefix function-prefix
                            :error-map error-map)
-    (format nil "#define OK~%")))
+    (format nil "~a ~a(~{~a~^, ~}) {~%~%}"
+            (c-type return-type)
+            (coerce-to-c-name callable-name)
+            (append
+             (mapcar (lambda (item)
+                       (destructuring-bind (name type)
+                           item
+                         (format nil "~a ~a" (c-type type) (lisp-to-c-name name))))
+                     typed-lambda-list)
+             (and result-type
+                  (list (format nil "~a *result" (c-type result-type))))))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

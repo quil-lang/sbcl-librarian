@@ -91,7 +91,7 @@
                              :error-map error-map)
       `(progn
          (sb-alien:define-alien-callable
-             ,(list (concatenate 'string "_" (coerce-to-c-name callable-name)) callable-name)
+             ,(callable-name-with-c-prefix callable-name "_")
              ,(sb-alien-type return-type)
              (,@(loop :for (arg type) :in typed-lambda-list
                       :collect (list arg (sb-alien-type type)))

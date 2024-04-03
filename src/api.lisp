@@ -32,6 +32,14 @@ All Lisp calls will get wrapped in a block named NAME, within which a HANDLER-BI
 (defun lisp-to-c-name (lisp-name)
   (nsubstitute #\_ #\- (string-downcase (symbol-name lisp-name))))
 
+(defun callable-name-with-c-prefix (callable-name prefix)
+  (multiple-value-bind (c-name lisp-name)
+      (etypecase callable-name
+        (list (values (first callable-name) (second callable-name)))
+        (symbol (values (lisp-to-c-name callable-name) callable-name))
+        (string (values callable-name (c-to-lisp-name callable-name))))
+    (list (concatenate 'string prefix c-name) lisp-name)))
+
 (defun coerce-to-c-name (name)
   (typecase name
     (list (car name))

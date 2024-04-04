@@ -60,7 +60,7 @@ NOTE: Here, the APIs must already be defined elsewhere."
     (loop :for (kind . things) :in (api-specs api)
           :when (eq kind ':function)
             :append (mapcar (lambda (spec)
-                              (prefix-name (api-function-prefix api) (first spec)))
+                              (concatenate 'string "_" (prefix-name (api-function-prefix api) (first spec))))
                             things))))
 
 (defun build-core-and-die (library directory &key compression)

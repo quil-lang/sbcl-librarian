@@ -85,6 +85,7 @@
   (format stream "  if (initialize_lisp(~a, init_args) != 0) return -1;~%"
           (+ 4 (length initialize-lisp-args)))
   (format stream "  initialized = 1;~%")
+  (format stream "  lossage_handler = return_from_lisp;~%")
   (format stream "  return 0; }"))
 
 (defun build-bindings (library directory &key (omit-init-function nil)
@@ -120,6 +121,8 @@
       (format stream "#include ~s~%~%" header-name)
       (format stream "#include <setjmp.h>~%~%")
       (format stream "__thread jmp_buf fatal_lisp_error_handler;~%~%")
+      (format stream "extern void (*lossage_handler)(void);~%~%")
+      (format stream "void return_from_lisp(void) { longjmp(fatal_lisp_error_handler, 1); }~%~%")
       (dolist (api (library-apis library))
         (write-api-to-source api stream))
       (unless omit-init-function

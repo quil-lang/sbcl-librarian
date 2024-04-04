@@ -47,35 +47,34 @@
 (defun c-function-definition (name result-type typed-lambda-list
                               &key (function-prefix "")
                                 error-map)
-  (multiple-value-bind (callable-name return-type typed-lambda-list result-type)
-      (canonical-signature name result-type typed-lambda-list
-                           :function-prefix function-prefix
-                           :error-map error-map)
-    (declare (ignore return-type))
-    (let ((call-statement (format nil "return ~a(~{~a~^, ~});"
-                                  (concatenate 'string "_" (coerce-to-c-name callable-name))
-                                  (append
-                                   (mapcar (lambda (item)
-                                             (destructuring-bind (name type)
-                                                 item
-                                               (declare (ignore type))
-                                               (lisp-to-c-name name)))
-                                           typed-lambda-list)
-                                   (and result-type
-                                        (list "result"))))))
-      (format nil "~a {~%~a~%}~%"
-              (c-function-declaration name result-type typed-lambda-list
-                                      :datap nil :externp nil :linkage nil
-                                      :function-prefix function-prefix :error-map error-map)
-              (if error-map
-                  (format nil
-                          "    if (!setjmp(fatal_lisp_error_handler)) {
+  (let ((header (c-function-declaration name result-type typed-lambda-list
+                                        :datap nil :externp nil :linkage nil
+                                        :function-prefix function-prefix :error-map error-map)))
+    (multiple-value-bind (callable-name return-type typed-lambda-list result-type)
+        (canonical-signature name result-type typed-lambda-list
+                             :function-prefix function-prefix
+                             :error-map error-map)
+      (declare (ignore return-type))
+      (let ((call-statement (format nil "return ~a(~{~a~^, ~});"
+                                    (concatenate 'string "_" (coerce-to-c-name callable-name))
+                                    (append
+                                     (mapcar (lambda (item)
+                                               (destructuring-bind (name type)
+                                                   item
+                                                 (declare (ignore type))
+                                                 (lisp-to-c-name name)))
+                                             typed-lambda-list)
+                                     (and result-type
+                                          (list "result"))))))
+        (format nil "~a {~%~a~%}~%"
+                header
+                (if error-map
+                    (format nil "    if (!setjmp(fatal_lisp_error_handler)) {
         ~a
     } else {
         ~a
     }" call-statement call-statement)
-                  (format nil
-                          "    ~a" call-statement))))))
+                    (format nil "    ~a" call-statement)))))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

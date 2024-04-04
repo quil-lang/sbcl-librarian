@@ -51,39 +51,31 @@
       (canonical-signature name result-type typed-lambda-list
                            :function-prefix function-prefix
                            :error-map error-map)
-    (format nil "~a ~a(~{~a~^, ~}) {~%~a~%}~%"
-            (c-type return-type)
-            (coerce-to-c-name callable-name)
-            (append
-             (mapcar (lambda (item)
-                       (destructuring-bind (name type)
-                           item
-                         (format nil "~a ~a" (c-type type) (lisp-to-c-name name))))
-                     typed-lambda-list)
-             (and result-type
-                  (list (format nil "~a *result" (c-type result-type)))))
-            (if error-map
-                (format nil "    if (!setjmp(fatal_lisp_error_handler)) {~%        return ~a(~{~a~^, ~});~%    } else {~%        return ~a;~%    }"
-                        (concatenate 'string "_" (coerce-to-c-name callable-name))
-                        (append
-                         (mapcar (lambda (item)
-                                   (destructuring-bind (name type)
-                                       item
-                                     (lisp-to-c-name name)))
-                                 typed-lambda-list)
-                         (and result-type
-                              (list "result")))
-                        (error-map-fatal-code error-map))
-                (format nil "    return ~a(~{~a~^, ~});"
-                        (concatenate 'string "_" (coerce-to-c-name callable-name))
-                        (append
-                         (mapcar (lambda (item)
-                                   (destructuring-bind (name type)
-                                       item
-                                     (lisp-to-c-name name)))
-                                 typed-lambda-list)
-                         (and result-type
-                              (list "result"))))))))
+    (declare (ignore return-type))
+    (let ((call-statement (format nil "return ~a(~{~a~^, ~});"
+                                  (concatenate 'string "_" (coerce-to-c-name callable-name))
+                                  (append
+                                   (mapcar (lambda (item)
+                                             (destructuring-bind (name type)
+                                                 item
+                                               (declare (ignore type))
+                                               (lisp-to-c-name name)))
+                                           typed-lambda-list)
+                                   (and result-type
+                                        (list "result"))))))
+      (format nil "~a {~%~a~%}~%"
+              (c-function-declaration name result-type typed-lambda-list
+                                      :datap nil :externp nil :linkage nil
+                                      :function-prefix function-prefix :error-map error-map)
+              (if error-map
+                  (format nil
+                          "    if (!setjmp(fatal_lisp_error_handler)) {
+        ~a;
+    } else {
+        ~a;
+    }" call-statement call-statement)
+                  (format nil
+                          "    ~a;" call-statement))))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

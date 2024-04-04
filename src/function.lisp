@@ -72,8 +72,8 @@
                     (format nil "    if (!setjmp(fatal_lisp_error_handler)) {
         ~a
     } else {
-        ~a
-    }" call-statement call-statement)
+        return ~d;
+    }" call-statement (error-map-fatal-code error-map))
                     (format nil "    ~a" call-statement)))))))
 
 (defun callable-definition (name result-type typed-lambda-list &key

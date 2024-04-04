@@ -62,17 +62,28 @@
                      typed-lambda-list)
              (and result-type
                   (list (format nil "~a *result" (c-type result-type)))))
-            (format nil "    if (!setjmp(fatal_lisp_error_handler)) {~%        return ~a(~{~a~^, ~});~%    } else {~%        return ~a;~%    }~%}"
-                    (concatenate 'string "_" (coerce-to-c-name callable-name))
-                    (append
-                     (mapcar (lambda (item)
-                               (destructuring-bind (name type)
-                                   item
-                                 (lisp-to-c-name name)))
-                             typed-lambda-list)
-                     (and result-type
-                          (list "result")))
-                    (error-map-fatal-code error-map)))))
+            (if error-map
+                (format nil "    if (!setjmp(fatal_lisp_error_handler)) {~%        return ~a(~{~a~^, ~});~%    } else {~%        return ~a;~%    }~%}"
+                        (concatenate 'string "_" (coerce-to-c-name callable-name))
+                        (append
+                         (mapcar (lambda (item)
+                                   (destructuring-bind (name type)
+                                       item
+                                     (lisp-to-c-name name)))
+                                 typed-lambda-list)
+                         (and result-type
+                              (list "result")))
+                        (error-map-fatal-code error-map))
+                (format nil "    return ~a(~{~a~^, ~});"
+                        (concatenate 'string "_" (coerce-to-c-name callable-name))
+                        (append
+                         (mapcar (lambda (item)
+                                   (destructuring-bind (name type)
+                                       item
+                                     (lisp-to-c-name name)))
+                                 typed-lambda-list)
+                         (and result-type
+                              (list "result"))))))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

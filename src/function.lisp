@@ -62,7 +62,7 @@
                      typed-lambda-list)
              (and result-type
                   (list (format nil "~a *result" (c-type result-type)))))
-            (format nil "    printf(\"hello\n\"); return ~a(~{~a~^, ~});"
+            (format nil "    return ~a(~{~a~^, ~});"
                     (concatenate 'string "_" (coerce-to-c-name callable-name))
                     (append
                      (mapcar (lambda (item)

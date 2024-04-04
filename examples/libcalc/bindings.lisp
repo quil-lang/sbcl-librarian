@@ -11,6 +11,11 @@
         (declare (ignore condition))
         (return-from error-map 1)))))
 
+(defun test-fatal-error ()
+  (sb-sys:without-gcing
+    (let ((test '()))
+      (loop (push 1 test)))))
+
 (define-api libcalc-api (:error-map error-map
                          :function-prefix "calc_")
   (:literal "/* types */")
@@ -27,7 +32,8 @@
    (simplify expr-type ((expr expr-type)))
    (parse expr-type ((source :string)))
    (expression-to-string :string ((expr expr-type)))
-   (remove-zeros expr-type ((expr expr-type)))))
+   (remove-zeros expr-type ((expr expr-type)))
+   (test-fatal-error void (()))))
 
 (define-aggregate-library libcalc (:function-linkage "CALC_API")
   sbcl-librarian:handles sbcl-librarian:environment libcalc-api)

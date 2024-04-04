@@ -63,7 +63,7 @@
              (and result-type
                   (list (format nil "~a *result" (c-type result-type)))))
             (if error-map
-                (format nil "    if (!setjmp(fatal_lisp_error_handler)) {~%        return ~a(~{~a~^, ~});~%    } else {~%        return ~a;~%    }~%}"
+                (format nil "    if (!setjmp(fatal_lisp_error_handler)) {~%        return ~a(~{~a~^, ~});~%    } else {~%        return ~a;~%    }"
                         (concatenate 'string "_" (coerce-to-c-name callable-name))
                         (append
                          (mapcar (lambda (item)

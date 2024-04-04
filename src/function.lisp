@@ -51,8 +51,9 @@
       (canonical-signature name result-type typed-lambda-list
                            :function-prefix function-prefix
                            :error-map error-map)
+    (declare (ignore return-type))
     (let ((call-statement (format nil "return ~a(~{~a~^, ~});"
-                                 (concatenate 'string "_" (coerce-to-c-name callable-name))
+                                  (concatenate 'string "_" (coerce-to-c-name callable-name))
                                   (append
                                    (mapcar (lambda (item)
                                              (destructuring-bind (name type)
@@ -63,7 +64,7 @@
                                    (and result-type
                                         (list "result"))))))
       (format nil "~a {~%~a~%}~%"
-              (c-function-declaration name return-type typed-lambda-list
+              (c-function-declaration name result-type typed-lambda-list
                                       :datap nil :externp nil :linkage nil
                                       :function-prefix function-prefix :error-map error-map)
               (if error-map

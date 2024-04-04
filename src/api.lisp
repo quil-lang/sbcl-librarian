@@ -38,8 +38,9 @@ All Lisp calls will get wrapped in a block named NAME, within which a HANDLER-BI
         (list (values (first callable-name) (second callable-name)))
         (symbol (values (lisp-to-c-name callable-name) callable-name))
         (string (values callable-name (c-to-lisp-name callable-name))))
-    (format t "~A ~A~%" c-name lisp-name)
-    (list (concatenate 'string prefix c-name) lisp-name)))
+    (let ((thing (list (concatenate 'string prefix c-name) lisp-name)))
+      (format t "~A~%" thing)
+      thing)))
 
 (defun coerce-to-c-name (name)
   (typecase name

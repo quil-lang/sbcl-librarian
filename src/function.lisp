@@ -62,7 +62,7 @@
                      typed-lambda-list)
              (and result-type
                   (list (format nil "~a *result" (c-type result-type)))))
-            (format nil "    return ~a(~{~a~^, ~});"
+            (format nil "    if (!setjmp(fatal_lisp_error_handler)) {~%        return ~a(~{~a~^, ~});~%    } else {~%        return ~a;~%    }~%}"
                     (concatenate 'string "_" (coerce-to-c-name callable-name))
                     (append
                      (mapcar (lambda (item)
@@ -71,7 +71,8 @@
                                  (lisp-to-c-name name)))
                              typed-lambda-list)
                      (and result-type
-                          (list "result")))))))
+                          (list "result")))
+                    (error-map-fatal-code error-map)))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

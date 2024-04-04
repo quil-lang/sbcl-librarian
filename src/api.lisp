@@ -4,6 +4,8 @@
 
 (defgeneric error-map-type (error-map))
 
+(defgeneric error-map-fatal-code (error-map))
+
 (defmacro define-error-map (name error-type no-error fatal-error bindings)
   "Define an error map with the indicated NAME. 
 

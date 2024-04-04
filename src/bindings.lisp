@@ -118,6 +118,8 @@
                             :if-exists :supersede)
       (format stream "#define ~A~%~%" build-flag)
       (format stream "#include ~s~%~%" header-name)
+      (format stream "#include <setjmp.h>~%~%")
+      (format stream "__thread jmp_buf fatal_lisp_error_handler;~%~%")
       (dolist (api (library-apis library))
         (write-api-to-source api stream))
       (unless omit-init-function

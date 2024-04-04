@@ -109,4 +109,4 @@
                     (wrap-error-handling result error-map)
                     result))))
          (when *initialize-callables-p*
-           (sb-alien::initialize-alien-callable-symbol (callable-name-with-c-prefix callable-name "_")))))))
+           (sb-alien::initialize-alien-callable-symbol ',(callable-name-with-c-prefix callable-name "_")))))))

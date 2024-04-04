@@ -69,12 +69,12 @@
               (if error-map
                   (format nil
                           "    if (!setjmp(fatal_lisp_error_handler)) {
-        ~a;
+        ~a
     } else {
-        ~a;
+        ~a
     }" call-statement call-statement)
                   (format nil
-                          "    ~a;" call-statement))))))
+                          "    ~a" call-statement))))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

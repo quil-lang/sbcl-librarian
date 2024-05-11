@@ -3,6 +3,9 @@
 (defparameter *python-include-path*
   "/opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/include/python3.12")
 
+(define-alien-callable cube int ((x int))
+  (* x x x))
+
 (defparameter *prog*
   "
 #define PY_SSIZE_T_CLEAN
@@ -14,7 +17,7 @@ PyObject *square_it(PyObject *self, PyObject *args) {
   printf(\"hello from square_it\\n\");
   if (!PyArg_ParseTuple(args, \"i\", &x))
     return NULL;
-  return PyLong_FromLong((long) x * x);
+  return PyLong_FromLong((long) cube(x));
 }
 
 PyMethodDef methods[] = {
@@ -41,6 +44,7 @@ void exec_mod(PyObject *module) {
     (sb-tcc:tcc-set-output-type state sb-tcc:tcc-output-memory)
     (sb-tcc:tcc-add-include-path state *python-include-path*)
     (sb-tcc:tcc-compile-string state *prog*)
+    (sb-tcc:tcc-add-symbol state "cube" (cast (alien-callable-function 'cube) (* t)))
     (sb-tcc:tcc-relocate state nil)
     (let ((exec-mod (sb-tcc:tcc-get-symbol state "exec_mod")))
       (format t "~a~%" (sb-tcc:tcc-get-symbol state "square_it"))

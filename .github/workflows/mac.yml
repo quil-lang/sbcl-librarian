@@ -1,0 +1,48 @@
+name: Mac
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.arch == 'arm64' && 'macos-14' || 'macOS-13' }}
+    timeout-minutes: 60
+    strategy: 
+      matrix:
+        arch: [arm64]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/checkout@v1
+      with:
+        repository: sbcl/sbcl
+        ref: ${{ matrix.arch == 'arm64' && 'sbcl-2.2.4' || 'x86-null-tn' }}
+        path: sbcl
+    - name: install host sbcl
+      run: brew install sbcl
+    - name: build
+      working-directory: ../sbcl
+      env:  
+        SBCL_MAKE_TARGET_2_OPTIONS: --disable-ldb --disable-debugger
+      run: |
+        ./make.sh --xc-host='sbcl --lose-on-corruption --disable-ldb --disable-debugger'
+        ./make-shared-library.sh
+    - name: install quicklisp
+      working-directory: ../sbcl
+      run: |
+        curl -O https://beta.quicklisp.org/quicklisp.lisp
+        ./run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
+    - name: build and run example
+      working-directory: examples/libcalc
+      env:
+        SBCL_SRC: ${{ github.workspace }}/../sbcl
+        LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime:.
+        DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime:.
+        CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
+      run: |
+        $SBCL_SRC/run-sbcl.sh --script script.lisp
+        gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl
+        gcc -Wall -o example example.c -lcalc -lsbcl
+        echo "(+ 1 2)" | ./example
+   

@@ -1,0 +1,53 @@
+name: Windows
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/checkout@v1
+      with:
+        repository: sbcl/sbcl
+        ref: sbcl-2.4.4
+        path: sbcl
+    - uses: msys2/setup-msys2@v2
+      with:
+        install: mingw-w64-x86_64-gcc make diffutils git python3
+
+    - name: install host sbcl
+      shell: pwsh
+      working-directory: ../sbcl
+      run: |
+        choco install sbcl -source tools-for-build
+    - name: build sbcl
+      working-directory: ../sbcl
+      env:
+        SBCL_HOME: "/c/Program Files/Steel Bank Common Lisp/1.4.14"
+      run: |
+        PATH=$PATH:"/c/Program Files/Steel Bank Common Lisp/1.4.14"
+        export PATH
+        ./make.sh --xc-host='sbcl --lose-on-corruption --disable-ldb --disable-debugger' --with-sb-linkable-runtime
+    - name: install quicklisp
+      working-directory: ../sbcl
+      run: |
+        curl -O https://beta.quicklisp.org/quicklisp.lisp
+        ./run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
+    - name: build and run example
+      working-directory: examples/libcalc
+      env:
+        SBCL_SRC: ${{ github.workspace }}/../sbcl
+        LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime;.
+        CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
+      run: |
+        $SBCL_SRC/run-sbcl.sh --script script.lisp
+        gcc -Wall -fPIC -shared -o libcalc.dll libcalc.c -Wl,--export-all-symbols -Wl,--whole-archive -lsbcl -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd
+        gcc -Wall -o example example.c -lcalc
+        echo "(+ 1 2)" | ./example.exe

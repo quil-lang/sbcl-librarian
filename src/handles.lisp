@@ -7,7 +7,7 @@
 (defvar *handles* (vector (make-hash-table :synchronized t) 0))
 
 ;; coerce int key to void* handle
-(defun key-handle (key) (sb-alien:sap-alien (sb-int::int-sap key) (* t)))
+(defun key-handle (key) (sb-alien:sap-alien (sb-sys:int-sap key) (* t)))
 (defun handle-key (handle) (sb-alien::sap-int (sb-alien:alien-sap handle)))
 
 (defvar *handle-lock*

@@ -21,17 +21,21 @@
             library-name
             (coerce-to-c-name callable-name))))
 
-(defun write-default-python-header (library stream &optional (omit-init-call nil))
+(defun write-default-python-header (library stream &optional (omit-init-call nil)
+                                                             (library-path nil))
   (let ((name (library-c-name library)))
     (format stream "import os~%")
     (format stream "from ctypes import *~%")
     (format stream "from ctypes.util import find_library~%")
     (format stream "from pathlib import Path~%~%")
 
-    (format stream "try:~%")
-    (format stream "    libpath = Path(find_library('~a')).resolve()~%" name)
-    (format stream "except TypeError as e:~%")
-    (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)
+    (if library-path
+        (format stream "libpath = Path(\"~a\")~%~%" library-path)
+        (progn
+          (format stream "try:~%")
+          (format stream "    libpath = Path(find_library('~a')).resolve()~%" name)
+          (format stream "except TypeError as e:~%")
+          (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)))
 
     (format stream "~a = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" name)
     (unless omit-init-call
@@ -56,12 +60,13 @@
                                       :library-name library-name))
                          :collect (coerce-to-c-name (prefix-name (api-function-prefix api) name)))))))
 
-(defun build-python-bindings (library directory &key (omit-init-call nil) (text-between-header-and-exports ""))
+(defun build-python-bindings (library directory &key (omit-init-call nil) (text-between-header-and-exports "")
+                                                     (library-path nil))
   (let ((file-name (concatenate 'string (library-c-name library) ".py")))    
     (with-open-file (stream (merge-pathnames file-name directory)
                             :direction :output
                             :if-exists :supersede)
-      (funcall 'write-default-python-header library stream omit-init-call)
+      (funcall 'write-default-python-header library stream omit-init-call library-path)
       (write-string text-between-header-and-exports stream)
       (terpri stream)
       (let* ((api-exports 

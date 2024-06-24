@@ -78,7 +78,13 @@ Keyword Arguments
     :c-type "int" :alien-type sb-alien:int :python-type "c_int")
 
 (define-type :unsigned-int
-    :c-type "unsigned int" :alien-type sb-alien:unsigned-int :python-type "c_unt")
+    :c-type "unsigned int" :alien-type sb-alien:unsigned-int :python-type "c_uint")
+
+(define-type :int64
+    :c-type "long long" :alien-type (sb-alien:signed 64) :python-type "c_longlong")
+
+(define-type :uint64
+    :c-type "unsigned long long" :alien-type (sb-alien:unsigned 64) :python-type "c_ulonglong")
 
 (define-type :string
     :c-type "char*" :alien-type sb-alien:c-string :python-type "c_char_p")

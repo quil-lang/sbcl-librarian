@@ -52,5 +52,5 @@ jobs:
         gcc -Wall -o example example.c -lcalc -L.
         mv libcalc.dll $MSYSTEM_PREFIX/bin
         cp libcalc.core $MSYSTEM_PREFIX/bin
-        echo "(+ 1 2)" | ./example.exe
-        echo "(+ 1 2)" | python ./example.py
+        echo "(+ 1 2)" | ./example.exe | tr -d '\r\n' | grep "> 3> "
+        echo "(+ 1 2)" | python ./example.py | tr -d '\r\n' | grep "> 3> "

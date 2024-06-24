@@ -44,6 +44,6 @@ jobs:
         $SBCL_SRC/run-sbcl.sh --script script.lisp
         gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl
         gcc -Wall -o example example.c -lcalc -lsbcl
-        echo "(+ 1 2)" | ./example
-        echo "(+ 1 2)" | python3 ./example.py
+        echo "(+ 1 2)" | ./example | tr -d '\n' | grep "> 3> "
+        echo "(+ 1 2)" | python3 ./example.py | tr -d '\n' | grep "> 3> "
    

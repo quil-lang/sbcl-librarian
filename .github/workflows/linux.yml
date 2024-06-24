@@ -43,6 +43,6 @@ jobs:
         gcc -Wall -o example example.c -lcalc -lsbcl
         sudo mv libcalc.so /usr/local/lib
         sudo cp libcalc.core /usr/local/lib
-        echo "(+ 1 2)" | ./example
-        echo "(+ 1 2)" | python ./example.py
+        echo "(+ 1 2)" | ./example | tr -d '\n' | grep "> 3> "
+        echo "(+ 1 2)" | python ./example.py | tr -d '\n' | grep "> 3> "
    

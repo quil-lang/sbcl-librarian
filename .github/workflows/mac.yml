@@ -45,4 +45,5 @@ jobs:
         gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl
         gcc -Wall -o example example.c -lcalc -lsbcl
         echo "(+ 1 2)" | ./example
+        echo "(+ 1 2)" | python3 ./example.py
    

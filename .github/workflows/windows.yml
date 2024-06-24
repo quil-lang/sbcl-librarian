@@ -44,10 +44,13 @@ jobs:
       working-directory: examples/libcalc
       env:
         SBCL_SRC: ${{ github.workspace }}/../sbcl
-        LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime;.
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
+        MSYS2_PATH_TYPE: inherit
       run: |
         $SBCL_SRC/run-sbcl.sh --script script.lisp
-        gcc -Wall -fPIC -shared -o libcalc.dll libcalc.c -Wl,--export-all-symbols -Wl,--whole-archive -lsbcl -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd
-        gcc -Wall -o example example.c -lcalc
+        gcc -Wall -fPIC -shared -Wl,--export-all-symbols -o libcalc.dll libcalc.c -Wl,--whole-archive $SBCL_SRC/src/runtime/libsbcl.a -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd
+        gcc -Wall -o example example.c -lcalc -L.
+        mv libcalc.dll $MSYSTEM_PREFIX/bin
+        cp libcalc.core $MSYSTEM_PREFIX/bin
         echo "(+ 1 2)" | ./example.exe
+        echo "(+ 1 2)" | python ./example.py

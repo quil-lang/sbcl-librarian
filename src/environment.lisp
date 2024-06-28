@@ -27,8 +27,16 @@
 (defun gc ()
   (sb-ext:gc :full t))
 
+(defun funcall0-by-name (name package-name)
+  (funcall (symbol-function (find-symbol (string-upcase name)
+                                         (if (string= "" package-name)
+                                             (sb-int:sane-package)
+                                             (string-upcase package-name)))))
+  (values))
+
 (define-api environment (:function-prefix "")
   (:function
    (("lisp_enable_debugger" enable-debugger) :void ())
    (("lisp_disable_debugger" disable-debugger) :void ())
-   (("lisp_gc" gc) :void ())))
+   (("lisp_gc" gc) :void ())
+   (("lisp_funcall0_by_name" funcall0-by-name) :void ((name :string) (package-name :string)))))

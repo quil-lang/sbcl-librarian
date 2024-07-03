@@ -31,8 +31,10 @@ after initializing callable symbols[^3].
     (setf sb-thread::*initial-thread* sb-thread:*current-thread*)
     (unwind-protect
          (locally
-             (declare (sb-ext:muffle-conditions sb-kernel:redefinition-warning))
-           (load pathname))
+             (declare (sb-ext:muffle-conditions sb-kernel:redefinition-warning style-warning))
+           (handler-bind
+               ((sb-kernel:redefinition-warning #'muffle-warning))
+             (load pathname)))
       #+darwin
       (setf sb-thread::*initial-thread* initial-thread))))
 

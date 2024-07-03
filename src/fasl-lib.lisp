@@ -91,7 +91,7 @@ symbols defined in SYSTEMS. The C functions to perform
     (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
       #+win32
       (format stream "#include <Windows.h>~%")
-      (format stream "#include \"lib~A.h\"~%" *base-library-name*)
+      (format stream "#include \<lib~A.h\>~%" *base-library-name*)
       (terpri stream)
       (format stream "#define INCBIN_STYLE INCBIN_STYLE_SNAKE~%")
       (format stream "#define INCBIN_PREFIX~%")
@@ -104,7 +104,7 @@ symbols defined in SYSTEMS. The C functions to perform
       (terpri stream)
       (progn
         (let ((function-name (fasl-library-load-function-name library)))
-          (format stream "void ~A(void) {~%" function-name)
+          (format stream "__attribute__((constructor))~%static void ~A(void) {~%" function-name)
           #+win32
           (let ((buf-size 1024))
             (format stream "    char dll_path[~D];~%" buf-size)
@@ -140,7 +140,6 @@ library and its header file."
       (format stream "set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})~%")
       (format stream "find_library(BASE_LIBRARY NAMES lib~A${CMAKE_SHARED_LIBRARY_SUFFIX})~%" *base-library-name*)
       (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+win32 "${BASE_LIBRARY}")
-      (format stream "set_target_properties(~A PROPERTIES PREFIX \"\")~%" c-name)
       (format stream "target_link_libraries(~A PRIVATE ${BASE_LIBRARY})~%" c-name)
       (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)
       (format stream "install(FILES ~A.h TYPE INCLUDE)~%" c-name))))

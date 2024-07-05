@@ -1,0 +1,58 @@
+From 4a4dc050d49789e60ab3a71ea85502caf42755e4 Mon Sep 17 00:00:00 2001
+From: Kartik Singh <kssingh@hrl.com>
+Date: Fri, 5 Jul 2024 14:22:35 -0700
+Subject: [PATCH] Support Clang + PDB on Windows
+
+---
+ src/runtime/Config.x86-64-win32 | 18 ++++++++++++++++--
+ src/runtime/hopscotch.c         |  3 +--
+ 2 files changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/src/runtime/Config.x86-64-win32 b/src/runtime/Config.x86-64-win32
+index 3c922ffd3..b2c75ddd0 100644
+--- a/src/runtime/Config.x86-64-win32
++++ b/src/runtime/Config.x86-64-win32
+@@ -56,10 +56,24 @@ CFLAGS += -g -W -Wall \
+        -Wno-unused-function -Wno-unused-parameter -Wno-cast-function-type \
+        -Wno-type-limits \
+        -fno-omit-frame-pointer \
+-       -O5 -m64 -DWINVER=0x0501 \
++       -O3 -m64 -DWINVER=0x0501 \
+        -D__W32API_USE_DLLIMPORT__
+ 
+-CC = gcc
++CC ?= gcc
++
++ifeq ($(CC),clang)
++ifneq ($(shell ld.lld --version | head -n 1 | grep LLD),)
++LD=ld.lld
++CFLAGS += -fuse-ld=lld
++endif
++endif
++
++ifeq ($(shell $(CC) -gcodeview 2>&1 | grep codeview),)
++ifeq ($(shell $(LD) -pdb= 2>&1 | grep -- -pdb=),)
++CFLAGS += -gcodeview
++LINKFLAGS += -Wl,-pdb=
++endif
++endif
+ 
+ ifeq ($(shell $(LD) --disable-dynamicbase 2>&1 | grep disable-dynamicbase),)
+ LINKFLAGS += -Wl,--disable-dynamicbase
+diff --git a/src/runtime/hopscotch.c b/src/runtime/hopscotch.c
+index 0c8330d65..ccbb53ddc 100644
+--- a/src/runtime/hopscotch.c
++++ b/src/runtime/hopscotch.c
+@@ -22,8 +22,7 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #ifdef LISP_FEATURE_WIN32
+-/* I don't know where ffs() is prototyped */
+-extern int ffs(int);
++#define ffs(x) __builtin_ffs(x)
+ #else
+ /* https://www.freebsd.org/cgi/man.cgi?query=fls&sektion=3&manpath=FreeBSD+7.1-RELEASE
+    says strings.h */
+-- 
+2.32.1 (Apple Git-133)
+

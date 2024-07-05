@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v1
       with:
         repository: sbcl/sbcl
-        ref: ${{ matrix.arch == 'arm64' && 'sbcl-2.4.5' || 'x86-null-tn' }}
+        ref: ${{ matrix.arch == 'arm64' && 'sbcl-2.4.6' || 'x86-null-tn' }}
         path: sbcl
     - name: install host sbcl
       run: brew install sbcl

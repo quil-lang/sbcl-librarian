@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v1
       with:
         repository: sbcl/sbcl
-        ref: sbcl-2.4.5
+        ref: sbcl-2.4.6
         path: sbcl
     - name: install host sbcl
       run: |

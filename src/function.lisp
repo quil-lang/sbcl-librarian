@@ -96,7 +96,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
                                           (list "result"))))))
         (format nil "~a {~%~a~%}~%"
                 header
-                (format nil "    if (!fatal_sbcl_error_occurred && !~a(fatal_lisp_error_handler)) {
+                (format nil "    if (!fatal_sbcl_error_occurred && !~a(JMP_BUF_CAST fatal_lisp_error_handler)) {
         ~a
     } else {
         ~a

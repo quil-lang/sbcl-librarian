@@ -131,14 +131,22 @@
       ;; use a jump buffer of type intptr_t[5] instead of jmp_buf (see
       ;; https://gcc.gnu.org/onlinedocs/gcc/Nonlocal-Gotos.html).
       #-win32
-      (format stream "__thread jmp_buf fatal_lisp_error_handler;~%~%")
+      (format stream "__thread jmp_buf fatal_lisp_error_handler;~%")
       #+win32
-      (format stream "__thread intptr_t fatal_lisp_error_handler[5];~%~%")
+      (format stream "__thread intptr_t fatal_lisp_error_handler[5];~%")
+      ;; Clang's __builtin_{set,long}jmp are compatibile with the GCC
+      ;; equivalents[^1]. However, Clang types the jmp_buf arguments
+      ;; to these builtins as `(void **)` instead of `intptr[5]`[^2],
+      ;; so we add a macro to conditionally insert the cast.
+      ;;
+      ;; [^1]: https://github.com/llvm/llvm-project/blob/ceade83ad5fc529f2b2beb896eec0dd0b29fdd44/llvm/docs/ExceptionHandling.rst#id32
+      ;; [^2]: https://github.com/llvm/llvm-project/blob/ceade83ad5fc529f2b2beb896eec0dd0b29fdd44/clang/include/clang/Basic/Builtins.td#L897
+      (format stream "#ifdef __clang__~%# define JMP_BUF_CAST (void **)~%#else~%# define JMP_BUF_CAST~%#endif~%~%")
       (when (sb-sys:find-foreign-symbol-address "set_lossage_handler")
         (format stream "void set_lossage_handler(void (*handler)(void));~%"))
       (format stream "void ldb_monitor(void);~%~%")
       (format stream "int fatal_sbcl_error_occurred = 0;~%~%")
-      (format stream "void return_from_lisp(void) { fatal_sbcl_error_occurred = 1; fflush(stdout); fflush(stderr); ~a(fatal_lisp_error_handler, 1); }~%~%"
+      (format stream "void return_from_lisp(void) { fatal_sbcl_error_occurred = 1; fflush(stdout); fflush(stderr); ~a(JMP_BUF_CAST fatal_lisp_error_handler, 1); }~%~%"
               *longjmp-operator*)
       (dolist (api (library-apis library))
         (write-api-to-source api stream))

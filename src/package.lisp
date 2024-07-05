@@ -12,6 +12,9 @@
            #:build-python-bindings
            #:build-core-and-die
 
+           #:library-c-name
+           #:callable-exports
+
            #:loader
            #:handles
            #:environment))

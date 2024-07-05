@@ -68,12 +68,31 @@
                          :collect (coerce-to-c-name (prefix-name (api-function-prefix api) name)))))))
 
 (defun build-python-bindings (library directory &key (omit-init-call nil) (text-between-header-and-exports "")
-                                                     (library-path nil))
+                                                     (library-path nil) (write-python-header-fn #'write-default-python-header))
+  "Generates a Python source file in DIRECTORY containing bindings for
+LIBRARY. The default consists of a header, which loads the shared
+library and calls its init function, followed by a sequence of
+bindings, which create wrappers for the functions exported by the
+shared library.
+
+If OMIT-INIT-CALL is T, then don't call the init function after
+loading the shared library.
+
+TEXT-BETWEEN-HEADER-AND-EXPORTS is inserted verbatim after the header
+and before the bindings.
+
+If LIBRARY-PATH is not NIL, then load the shared library directly from
+the provided path instead of using ctypes.util.find_library.
+
+If WRITE-PYTHON-HEADER-FN is provided, then call that function instead
+of WRITE-DEFAULT-PYTHON-HEADER to generate the header text. The
+provided function must have the same signature as
+WRITE-DEFAULT-PYTHON-HEADER."
   (let ((file-name (concatenate 'string (library-c-name library) ".py")))    
     (with-open-file (stream (merge-pathnames file-name directory)
                             :direction :output
                             :if-exists :supersede)
-      (funcall 'write-default-python-header library stream omit-init-call library-path)
+      (funcall write-python-header-fn library stream omit-init-call library-path)
       (write-string text-between-header-and-exports stream)
       (terpri stream)
       (let* ((api-exports 

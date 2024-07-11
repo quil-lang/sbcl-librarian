@@ -50,7 +50,7 @@
                                              :function-prefix (api-function-prefix api)
                                              :error-map (api-error-map api))))))))))
 
-(defun write-api-to-source (api stream)
+(defun write-api-to-source (api linkage stream)
   (dolist (spec (api-specs api))
     (destructuring-bind (kind &rest things) spec
       (ecase kind
@@ -63,6 +63,7 @@
                      (c-function-declaration name result-type typed-lambda-list
                                              :datap t
                                              :externp nil
+                                             :linkage linkage
                                              :function-prefix (api-function-prefix api)
                                              :c-prefix "_"
                                              :error-map (api-error-map api))
@@ -149,6 +150,6 @@
       (format stream "void return_from_lisp(void) { fatal_sbcl_error_occurred = 1; fflush(stdout); fflush(stderr); ~a(JMP_BUF_CAST fatal_lisp_error_handler, 1); }~%~%"
               *longjmp-operator*)
       (dolist (api (library-apis library))
-        (write-api-to-source api stream))
+        (write-api-to-source api linkage stream))
       (unless omit-init-function
         (write-init-function 'init linkage stream initialize-lisp-args)))))

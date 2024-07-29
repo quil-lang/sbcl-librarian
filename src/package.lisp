@@ -1,5 +1,7 @@
 ;;;; package.lisp
 
+(require :sb-sprof)
+
 (defpackage #:sbcl-librarian
   (:use #:cl)
   (:export #:define-handle-type
@@ -11,6 +13,7 @@
            #:build-bindings
            #:build-python-bindings
            #:build-core-and-die
+           #:create-fasl-library-cmake-project
 
            #:library-c-name
            #:callable-exports

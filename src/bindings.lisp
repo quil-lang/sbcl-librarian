@@ -92,7 +92,8 @@
   (format stream "  return 0; }"))
 
 (defun build-bindings (library directory &key (omit-init-function nil)
-                                              (initialize-lisp-args nil))
+                                              (initialize-lisp-args nil)
+                                              (fasl-lib-p nil))
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
@@ -113,6 +114,11 @@
       (unless omit-init-function
         (format stream "~A;~%~%"
                 (c-function-declaration 'init ':int '((core :string))
+                                        :datap nil
+                                        :linkage linkage)))
+      (when fasl-lib-p
+        (format stream "~A;~%~%"
+                (c-function-declaration (fasl-library-load-function-name library)':void '()
                                         :datap nil
                                         :linkage linkage)))
       (format stream "#endif~%"))
@@ -142,7 +148,7 @@
       ;;
       ;; [^1]: https://github.com/llvm/llvm-project/blob/ceade83ad5fc529f2b2beb896eec0dd0b29fdd44/llvm/docs/ExceptionHandling.rst#id32
       ;; [^2]: https://github.com/llvm/llvm-project/blob/ceade83ad5fc529f2b2beb896eec0dd0b29fdd44/clang/include/clang/Basic/Builtins.td#L897
-      (format stream "#ifdef __clang__~%# define JMP_BUF_CAST (void **)~%#else~%# define JMP_BUF_CAST~%#endif~%~%")
+      (format stream "#if defined(__clang__) && defined(_WIN32)~%# define JMP_BUF_CAST (void **)~%#else~%# define JMP_BUF_CAST~%#endif~%~%")
       (when (sb-sys:find-foreign-symbol-address "set_lossage_handler")
         (format stream "void set_lossage_handler(void (*handler)(void));~%"))
       (format stream "void ldb_monitor(void);~%~%")

@@ -24,13 +24,15 @@ after initializing callable symbols[^3].
 [^2]: https://github.com/cffi/cffi/blob/5bfca29deb8b4c214a86ccf37279cc5cea2151e1/src/cffi-sbcl.lisp#L344
 [^3]: https://github.com/sbcl/sbcl/blob/6e2df19952cfc3a526dcc42a5c0f8fa6b571f312/src/code/save.lisp#L83"
   (let ((*initialize-callables-p* t)
+        (*compile-verbose* nil)
         #+darwin
         (initial-thread sb-thread::*initial-thread*))
     #+darwin
     (setf sb-thread::*initial-thread* sb-thread:*current-thread*)
     (unwind-protect
-         (locally
-             (declare (sb-ext:muffle-conditions sb-kernel:redefinition-warning))
+         (handler-bind
+             ((sb-kernel:redefinition-warning #'muffle-warning)
+              (style-warning #'muffle-warning))
            (load pathname))
       #+darwin
       (setf sb-thread::*initial-thread* initial-thread))))

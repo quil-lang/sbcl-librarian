@@ -6,6 +6,7 @@
   ; :license "TODO"
   ; :version "0.0.1"
   :in-order-to ((test-op (test-op "sbcl-librarian/tests")))
+  :depends-on (#:swank)
   :serial t
   :pathname "src/"
   :components ((:file "package")

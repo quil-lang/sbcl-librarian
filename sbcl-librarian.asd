@@ -19,7 +19,8 @@
                (:file "handles")
                (:file "loader")
                (:file "environment")
-               (:file "fasl-lib")))
+               (:file "fasl-lib")
+               (:file "diagnostics")))
 
 (asdf:defsystem #:sbcl-librarian/project
   :description "Project skeleton builder for SBCL-LIBRARIAN"

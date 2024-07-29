@@ -1,7 +1,5 @@
 (in-package #:sbcl-librarian)
 
-(require :sb-sprof)
-
 (defun memory-report ()
   (format t "~&output of (ROOM NIL):~%")
   (room nil)

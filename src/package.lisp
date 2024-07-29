@@ -1,5 +1,7 @@
 ;;;; package.lisp
 
+(require :sb-sprof)
+
 (defpackage #:sbcl-librarian
   (:use #:cl)
   (:export #:define-handle-type

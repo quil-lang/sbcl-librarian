@@ -92,8 +92,7 @@
   (format stream "  return 0; }"))
 
 (defun build-bindings (library directory &key (omit-init-function nil)
-                                              (initialize-lisp-args nil)
-                                              (fasl-lib-p nil))
+                                              (initialize-lisp-args nil))
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
@@ -114,11 +113,6 @@
       (unless omit-init-function
         (format stream "~A;~%~%"
                 (c-function-declaration 'init ':int '((core :string))
-                                        :datap nil
-                                        :linkage linkage)))
-      (when fasl-lib-p
-        (format stream "~A;~%~%"
-                (c-function-declaration (fasl-library-load-function-name library)':void '()
                                         :datap nil
                                         :linkage linkage)))
       (format stream "#endif~%"))

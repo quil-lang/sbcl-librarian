@@ -26,7 +26,7 @@ COMPILE-BUNDLE-OP, is LOAD-OP on SBCL instead of LOAD-BUNDLE-OP[^1].
 initialized to OUTPUT-TRANSLATIONS."
   (asdf:initialize-output-translations output-translations)
   (unwind-protect
-       (values (funcall thunk))
+       (funcall thunk)
     (asdf:clear-output-translations)))
 
 (defmacro with-output-translations (output-translations &body body)

@@ -6,9 +6,11 @@
   ; :license "TODO"
   ; :version "0.0.1"
   :in-order-to ((test-op (test-op "sbcl-librarian/tests")))
+  :depends-on (#:swank)
   :serial t
   :pathname "src/"
   :components ((:file "package")
+               (:file "asdf-utils")
                (:file "types")
                (:file "function")
                (:file "api")
@@ -17,7 +19,9 @@
                (:file "python-bindings")
                (:file "handles")
                (:file "loader")
-               (:file "environment")))
+               (:file "environment")
+               (:file "fasl-lib")
+               (:file "diagnostics")))
 
 (asdf:defsystem #:sbcl-librarian/project
   :description "Project skeleton builder for SBCL-LIBRARIAN"

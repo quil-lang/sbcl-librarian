@@ -12,11 +12,12 @@
     (format nil
             "~a = ~a.~a
 ~a.restype = ~a
-~a.argtypes = [~{~a~^, ~}]"
+~a.argtypes = [~{~a~^, ~}]
+~:[~;~a = sbcl_librarian.wrapper.lift_fn(\"~:*~a\", ~:*~a)~%~]"
             ;; First line
             (coerce-to-c-name callable-name)
-            library-name
-            (coerce-to-c-name callable-name)
+	    library-name
+	    (coerce-to-c-name callable-name)
             ;; Second line
             (coerce-to-c-name callable-name)
             (python-type return-type)
@@ -26,7 +27,10 @@
              (loop :for (name type) :in typed-lambda-list
                    :collect (python-type type))
              (and result-type
-                  (list (format nil "POINTER(~a)" (python-type result-type))))))))
+                  (list (format nil "POINTER(~a)" (python-type result-type)))))
+	    ;; Fourth line (optional)
+	    (eql 'error-type return-type)
+	    (coerce-to-c-name callable-name))))
 
 (defun write-default-python-header (library stream &optional (omit-init-call nil)
                                                              (library-path nil))
@@ -35,12 +39,14 @@
     (format stream "from ctypes import *~%")
     (format stream "from ctypes.util import find_library~%")
     (format stream "from pathlib import Path~%~%")
+    (format stream "import sbcl_librarian.wrapper~%")
+    (format stream "from sbcl_librarian.errors import lisp_err_t~%~%")
 
     (if library-path
         (format stream "libpath = Path(\"~a\")~%~%" library-path)
         (progn
           (format stream "try:~%")
-          (format stream "    libpath = Path(find_library('~a')).resolve()~%" name)
+          (format stream "    libpath = Path(find_library('~a')).resolve()~%" (subseq name 3))
           (format stream "except TypeError as e:~%")
           (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)))
 

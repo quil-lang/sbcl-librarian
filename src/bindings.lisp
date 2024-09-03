@@ -106,6 +106,7 @@
       (let ((guard (format nil "_~A_h" c-name)))       
         (format stream "#ifndef ~A~%" guard)
         (format stream "#define ~A~%~%" guard))
+      (format stream "#include <libsbcl_librarian_err.h>~%~%")
       (when linkage
         (write-linkage-macro linkage build-flag stream))
       (dolist (api (library-apis library))

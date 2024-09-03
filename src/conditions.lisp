@@ -42,14 +42,14 @@
          :accessor lisp-bug-args)
    (backtrace :initarg :backtrace
               :accessor lisp-bug-backtrace
-              :initform (error "backtrace is required"))
-   (context :initform (list)
+              :initform (required 'backtrace))
+   (context :initform nil
             :accessor lisp-bug-context))
   (:report (lambda (c s)
              (with-slots (reason args backtrace context) c
                (let ((*print-circle* nil))
                  (format s "Internal lisp bug: ~?~%
-If you are seeing this, please file an issue on Gitlab and include this error message in the description.
+If you are seeing this, please file an issue and include this error message in the description.
 ~A
 
 Context:
@@ -57,7 +57,7 @@ Context:
 ~A"
                          reason
                          args
-                         *gitlab-issue-url*
+                         "TODO"
                          context
                          (if *print-backtrace-in-bug*
                              backtrace

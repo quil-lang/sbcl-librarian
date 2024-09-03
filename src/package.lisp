@@ -1,8 +1,13 @@
 ;;;; package.lisp
+(require "sb-sprof")
 
 (require :sb-sprof)
 
 (defpackage #:sbcl-librarian
+  (:shadow
+   #:error
+   #:warning
+   #:assert)
   (:use #:cl)
   (:export #:define-handle-type
            #:define-enum-type
@@ -20,5 +25,10 @@
 
            #:loader
            #:handles
-           #:environment))
+           #:environment
+
+	   #:error
+	   #:warning
+	   #:bug
+	   #:unreachable))
 

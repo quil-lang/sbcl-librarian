@@ -11,7 +11,7 @@
 
 (in-package #:sbcl-librarian/lib)
 
-(define-aggregate-library libsbcl-librarian (:function-linkage "LIBSBCL_LIBRARIAN_API")
+(define-aggregate-library sbcl-librarian (:function-linkage "LIBSBCL_LIBRARIAN_API")
   diagnostics
   environment
   errors
@@ -83,6 +83,6 @@
     (format stream "signal.signal(signal.SIGTERM, _term_handler)~%~%")
     (format stream "signal.signal(signal.SIGINT, _int_handler)~%~%")))
 
-(build-bindings libsbcl-librarian "." :omit-init-function t)
-(build-python-bindings libsbcl-librarian "." :omit-init-call t)
-(build-core-and-die libsbcl-librarian ".")
+(build-bindings sbcl-librarian "." :omit-init-function t)
+(build-python-bindings sbcl-librarian "." :omit-init-call t :write-python-header-fn #'write-python-header)
+(build-core-and-die sbcl-librarian ".")

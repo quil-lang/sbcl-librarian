@@ -10,7 +10,7 @@
                            :function-prefix function-prefix
                            :error-map error-map)
     (format nil
-            "~a = ~a.~a
+            "~a = ~a_dll.~a
 ~a.restype = ~a
 ~a.argtypes = [~{~a~^, ~}]
 ~:[~;~a = sbcl_librarian.wrapper.lift_fn(\"~:*~a\", ~:*~a)~%~]"
@@ -50,7 +50,7 @@
           (format stream "except TypeError as e:~%")
           (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)))
 
-    (format stream "~a = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" name)
+    (format stream "~a_dll = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" name)
     (unless omit-init-call
       (format stream "~a.init(str(libpath.parent / '~a.core').encode('utf-8'))~%~%"
               name name))))

@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libsbcl_librarian.h"
+#include "sbcl_librarian.h"
 
 #define BUF_SIZE 1024
 
@@ -28,10 +28,10 @@ static void do_initialize_lisp(const char *libsbcl_path)
 {
     char *libsbcl_dir = dir_name(libsbcl_path);
     int libsbcl_dir_len = strlen(libsbcl_dir);
-    int core_path_size = libsbcl_dir_len + sizeof("libsbcl_librarian.core") + 1;
+    int core_path_size = libsbcl_dir_len + sizeof("sbcl_librarian.core") + 1;
     char *core_path = malloc(core_path_size);
 
-    snprintf(core_path, core_path_size, "%slibsbcl_librarian.core", libsbcl_dir);
+    snprintf(core_path, core_path_size, "%ssbcl_librarian.core", libsbcl_dir);
 
     const char *init_args[] = {"", "--dynamic-space-size", "8192", "--core", core_path, "--noinform", "--no-userinit"};
 

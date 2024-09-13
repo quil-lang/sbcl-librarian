@@ -22,5 +22,5 @@ cmake --install . --prefix=$PREFIX
 popd
 
 # Package Python library
-cp lib/build/libsbcl_librarian.py lib/python/src/sbcl_librarian/raw.py
+cp lib/build/sbcl_librarian.py lib/python/src/sbcl_librarian/raw.py
 $PYTHON -m pip install lib/python/ --no-deps --ignore-installed -vv

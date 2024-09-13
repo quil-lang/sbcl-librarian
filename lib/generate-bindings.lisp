@@ -77,7 +77,7 @@
     (format stream "_term_handler = signal.getsignal(signal.SIGTERM)~%")
     (format stream "if platform.system() != \"Windows\":
     _chld_handler = signal.getsignal(signal.SIGCHLD)~%")
-    (format stream "~a = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" name)
+    (format stream "~a_dll = CDLL(str(libpath), mode=RTLD_GLOBAL)~%~%" name)
     (format stream "if platform.system() != \"Windows\":
     signal.signal(signal.SIGCHLD, _chld_handler)~%~%")
     (format stream "signal.signal(signal.SIGTERM, _term_handler)~%~%")

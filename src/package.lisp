@@ -23,9 +23,11 @@
            #:library-c-name
            #:callable-exports
 
-           #:loader
-           #:handles
+           #:diagnostics
            #:environment
+           #:errors
+           #:handles
+           #:loader
 
 	   #:error
 	   #:warning

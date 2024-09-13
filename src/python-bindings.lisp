@@ -46,7 +46,7 @@
         (format stream "libpath = Path(\"~a\")~%~%" library-path)
         (progn
           (format stream "try:~%")
-          (format stream "    libpath = Path(find_library('~a')).resolve()~%" (subseq name 3))
+          (format stream "    libpath = Path(find_library('~a')).resolve()~%" name)
           (format stream "except TypeError as e:~%")
           (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)))
 

@@ -1,5 +1,10 @@
 (in-package #:sbcl-librarian)
 
+(define-type :json
+  :c-type "char*"
+  :python-type "c_char_p"
+  :alien-type sb-alien:c-string)
+
 (define-enum-type error-type "lisp_err_t"
   ("LISP_ERR_SUCCESS" 0)
   ("LISP_ERR_FAILURE" 1)

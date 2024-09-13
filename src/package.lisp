@@ -29,6 +29,11 @@
            #:handles
            #:loader
 
+           #:lisp-error
+           #:lisp-warning
+           #:lisp-bug
+
+           #:assert
 	   #:error
 	   #:warning
 	   #:bug

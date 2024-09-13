@@ -18,7 +18,7 @@ shared library constructor that loads the embedded FASLs.")
 (defparameter *cmake-minimum-required* "3.12"
   "The minimum version of CMake required to run the generated project.")
 
-(defparameter *base-library-name* "sbcl"
+(defparameter *base-library-name* "sbcl_librarian"
   "The name of the shared library (minus the file suffix and 'lib' prefix) containing the
 SBCL runtime.")
 
@@ -46,14 +46,14 @@ skipping those for already-loaded systems."
                           (list target-system)))
          (*base-library-name* base-library-name))
     (compile-bundle-system-with-dependencies target-system build-directory)
-    (build-bindings library build-directory :omit-init-function t :fasl-lib-p t)
+    (build-bindings library build-directory :omit-init-function t)
     (create-incbin-source-file build-directory)
     (create-fasl-loader-source-file library systems build-directory)
     (create-cmakelists-file library systems build-directory)))
 
 (defun create-incbin-source-file (directory)
   "Copy the incbin source code to DIRECTORY."
-  (with-open-file (stream (uiop:merge-pathnames* *incbin-filename* directory) :direction :output)
+  (with-open-file (stream (uiop:merge-pathnames* *incbin-filename* directory) :direction :output :if-exists :supersede)
     (format stream *incbin-source-text*)))
 
 (defun system-c-name (system)
@@ -88,7 +88,7 @@ symbols defined in SYSTEMS. The C functions to perform
                  :for system-name := (asdf:component-name system)
                  :when (typep system 'asdf:require-system)
                    :do (format stream "~v@{ ~}lisp_require(\"~A\");~%" indent-size system-name))))
-    (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output)
+    (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output :if-exists :supersede)
       #+win32
       (format stream "#include <Windows.h>~%")
       (format stream "#include \<lib~A.h\>~%" *base-library-name*)
@@ -129,7 +129,7 @@ library and its header file."
          (loadable-systems (remove-if-not #'system-loadable-from-fasl-p systems))
          (source-filenames (append (list bindings-filename *incbin-filename* *fasl-loader-filename*)
                                    (mapcar #'system-fasl-bundle-filename loadable-systems))))
-    (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output)
+    (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output :if-exists :supersede)
       (format stream "cmake_minimum_required(VERSION ~A)~%" *cmake-minimum-required*)
       (format stream "project(~A)~%" c-name)
       (loop :for system :in loadable-systems

@@ -22,7 +22,7 @@ shared library constructor that loads the embedded FASLs.")
   "The name of the shared library (minus the file suffix and 'lib' prefix) containing the
 SBCL runtime.")
 
-(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name "sbcl"))
+(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name *base-library-name*))
   "Generate a CMake project in DIRECTORY for a shared library that, when
 loaded into a process that has already initialized the SBCL runtime,
 adds the C symbols for LIBRARY to the current process's symbol table
@@ -140,6 +140,8 @@ library and its header file."
       (format stream "set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})~%")
       (format stream "find_library(BASE_LIBRARY NAMES lib~A${CMAKE_SHARED_LIBRARY_SUFFIX})~%" *base-library-name*)
       (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+win32 "${BASE_LIBRARY}")
+      #-linux
+      (format stream "set_target_properties(~A PROPERTIES PREFIX \"\")" c-name)
       (format stream "target_link_libraries(~A PRIVATE ${BASE_LIBRARY})~%" c-name)
       (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)
       (format stream "install(FILES ~A.h TYPE INCLUDE)~%" c-name))))

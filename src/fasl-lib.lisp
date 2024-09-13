@@ -91,7 +91,7 @@ symbols defined in SYSTEMS. The C functions to perform
     (with-open-file (stream (uiop:merge-pathnames* *fasl-loader-filename* directory) :direction :output :if-exists :supersede)
       #+win32
       (format stream "#include <Windows.h>~%")
-      (format stream "#include \<lib~A.h\>~%" *base-library-name*)
+      (format stream "#include \<~A.h\>~%" *base-library-name*)
       (terpri stream)
       (format stream "#define INCBIN_STYLE INCBIN_STYLE_SNAKE~%")
       (format stream "#define INCBIN_PREFIX~%")

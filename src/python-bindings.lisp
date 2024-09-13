@@ -45,23 +45,8 @@
     (if library-path
         (format stream "libpath = Path(\"~a\")~%~%" library-path)
         (progn
-	  (format stream "def find_~a():~%" name)
-	  (format stream "    if platform.system() == 'Windows' or platform.system() == 'Linux':~%")
-	  (format stream "        return find_library('~a')~%" name)
-	  (format stream "    elif platform.system() == 'Darwin':~%")
-	  (format stream "        # cf. https://github.com/ContinuumIO/anaconda-issues/issues/1716~%")
-	  (format stream "        fallback_path = os.environ.get('DYLD_FALLBACK_LIBRARY_PATH', '')~%")
-	  (format stream "        conda_path = os.environ.get('CONDA_PREFIX')~%")
-	  (format stream "        try:~%")
-	  (format stream "            os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = (conda_path+'/lib:'+fallback_path) if conda_path else fallback_path~%")
-	  (format stream "            return find_library('~a')~%" name)
-	  (format stream "        finally:~%")
-	  (format stream "            os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = fallback_path~%")
-	  (format stream "    else:~%")
-	  (format stream "        raise Exception(f'Unexpected platform {platform.system()}')~%~%")
-
           (format stream "try:~%")
-          (format stream "    libpath = Path(find_~a('~:*~a')).resolve()~%" name)
+          (format stream "    libpath = Path(find_library('~a')).resolve()~%" name)
           (format stream "except TypeError as e:~%")
           (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)))
 

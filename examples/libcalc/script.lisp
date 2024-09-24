@@ -1,5 +1,3 @@
-(require '#:asdf)
-
 (ql:quickload '#:libcalc)
 
 (when (uiop:getenv "CI")

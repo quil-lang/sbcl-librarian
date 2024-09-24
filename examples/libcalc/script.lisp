@@ -1,6 +1,6 @@
 (require '#:asdf)
 
-(asdf:load-system '#:libcalc)
+(ql:quickload '#:libcalc)
 
 (when (uiop:getenv "CI")
   (push :github-ci *features*))

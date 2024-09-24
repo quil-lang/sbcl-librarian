@@ -41,7 +41,7 @@ jobs:
         DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime:.
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
       run: |
-        $SBCL_SRC/run-sbcl.sh --script script.lisp
+        $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
         gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl
         gcc -Wall -o example example.c -lcalc -lsbcl
         echo "(+ 1 2)" | ./example | tr -d '\n' | grep "> 3> "

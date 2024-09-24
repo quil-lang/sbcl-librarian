@@ -38,7 +38,7 @@ jobs:
         LD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime:/usr/local/lib
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
       run: |
-        $SBCL_SRC/run-sbcl.sh --script script.lisp
+        $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
         gcc -Wall -fPIC -shared -o libcalc.so libcalc.c -lsbcl
         gcc -Wall -o example example.c -lcalc -lsbcl
         sudo mv libcalc.so /usr/local/lib

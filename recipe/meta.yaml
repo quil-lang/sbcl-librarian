@@ -17,6 +17,7 @@ source:
 build:
   script_env:
     - LIBRARY_PATH
+    - DYLD_LIBRARY_PATH # [osx]
 
 requirements:
   build:

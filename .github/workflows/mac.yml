@@ -48,6 +48,7 @@ jobs:
     - name: build conda package
       env:
         LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
+        DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
       run: |
         source ~/.bash_profile
         conda build recipe --output-folder conda-bld

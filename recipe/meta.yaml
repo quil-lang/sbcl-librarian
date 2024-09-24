@@ -16,7 +16,7 @@ source:
 
 build:
   script_env:
-    - SBCL_SRC
+    - LIBRARY_PATH
 
 requirements:
   build:

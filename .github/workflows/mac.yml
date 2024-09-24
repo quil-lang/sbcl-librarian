@@ -46,6 +46,8 @@ jobs:
         conda config --add channels conda-forge
         conda install -y conda-build
     - name: build conda package
+      env:
+        SBCL_SRC: ${{ github.workspace }}/../sbcl
       run: |
         source ~/.bash_profile
         conda build recipe --output-folder conda-bld

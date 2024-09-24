@@ -14,6 +14,10 @@ source:
     folder: slime
   - path: build.ps1                   # [win]
 
+build:
+  script_env:
+    - SBCL_SRC
+
 requirements:
   build:
 #    - {{ compiler('c') }}

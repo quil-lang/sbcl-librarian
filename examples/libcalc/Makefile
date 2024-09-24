@@ -15,7 +15,7 @@ libsbcl.so: $(SBCL_SRC)
 	cp $(SBCL_SRC)/src/runtime/libsbcl.so ./
 
 libcalc.core libcalc.c libcalc.h libcalc.py: libcalc.lisp
-	CL_SOURCE_REGISTRY="$(ROOT_DIR)//" $(SBCL_SRC)/run-sbcl.sh --script "script.lisp"
+	CL_SOURCE_REGISTRY="$(ROOT_DIR)//" $(SBCL_SRC)/run-sbcl.sh --load "script.lisp" --quit
 
 libcalc.dylib: libcalc.core libcalc.c
 	$(CC) -dynamiclib -o $@ libcalc.c -L$(SBCL_SRC)/src/runtime -lsbcl -I$(ROOT_DIR)/lib

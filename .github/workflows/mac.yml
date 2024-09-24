@@ -42,8 +42,8 @@ jobs:
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
       run: |
         $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
-        gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl
-        gcc -Wall -o example example.c -lcalc -lsbcl
+        gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl -I../../lib
+        gcc -Wall -o example example.c -lcalc -lsbcl -I../../lib
         echo "(+ 1 2)" | ./example | tr -d '\n' | grep "> 3> "
         echo "(+ 1 2)" | python3 ./example.py | tr -d '\n' | grep "> 3> "
         python3 ./exhaust_heap.py | grep "returned to Python with error code 2 after heap exhaustion"

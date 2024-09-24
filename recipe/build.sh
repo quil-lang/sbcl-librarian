@@ -1,4 +1,4 @@
-conda install --offline /Users/kssingh/sbcl-2.2.4-10__sbcl_2.2.4.0_gb0f6cecc4.tar.bz2
+conda install sbcl
 SBCL_HOME=
 
 if [[ "$OSTYPE" == "darwin"* && $(uname -m) == "arm64" ]]; then

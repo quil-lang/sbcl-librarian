@@ -1,5 +1,3 @@
-SBCL_SRC=
-
 if [[ "$OSTYPE" == "darwin"* && $(uname -m) == "arm64" ]]; then
     :
 else
@@ -15,7 +13,7 @@ pushd lib
 mkdir build
 cd build
 # Build libsbcl
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_LIBRARY_PATH=$(SBCL_SRC)/src/runtime ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 cmake --build .
 cmake --install . --prefix=$PREFIX
 popd

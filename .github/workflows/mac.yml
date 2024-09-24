@@ -42,9 +42,11 @@ jobs:
         ~/miniconda3/bin/conda init bash
     - name: install conda-build
       run: |
+        source ~/.bash_profile
         conda install conda-build
     - name: build conda package
       run: |
+        source ~/.bash_profile
         conda build recipe --output-folder conda-bld
     - name: build and run example
       working-directory: examples/libcalc

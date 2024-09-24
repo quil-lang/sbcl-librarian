@@ -43,7 +43,8 @@ jobs:
     - name: install conda-build
       run: |
         source ~/.bash_profile
-        conda install conda-build
+        conda config --add channels conda-forge
+        conda install -y conda-build
     - name: build conda package
       run: |
         source ~/.bash_profile

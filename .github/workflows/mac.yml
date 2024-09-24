@@ -39,6 +39,7 @@ jobs:
         curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
         bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
         rm ~/miniconda3/miniconda.sh
+        ~/miniconda3/bin/conda init bash
         conda install conda-build
     - name: build conda package
       run: |

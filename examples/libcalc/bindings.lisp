@@ -10,6 +10,8 @@
       (loop (push 1 test)))))
 
 (sbcl-librarian:define-api libcalc-api (:function-prefix "calc_")
+  (:literal "/* types */")
+  (:type expr-type)
   (:literal "/* functions */")
   (:function
    (int-literal expr-type ((value :int)))

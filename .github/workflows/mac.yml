@@ -33,6 +33,12 @@ jobs:
       run: |
         curl -O https://beta.quicklisp.org/quicklisp.lisp
         ./run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
+    - name: install conda
+      run: |
+        mkdir -p ~/miniconda3
+        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
+        bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+        rm ~/miniconda3/miniconda.sh
     - name: build and run example
       working-directory: examples/libcalc
       env:

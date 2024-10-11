@@ -48,6 +48,12 @@ jobs:
       run: |
         curl -O https://beta.quicklisp.org/quicklisp.lisp
         ./run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
+    - name: install conda
+      shell: pwsh
+      run: |
+        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe -o miniconda.exe
+        Start-Process -FilePath ".\miniconda.exe" -ArgumentList "/S" -Wait
+        del miniconda.exe
     - name: build and run example
       working-directory: examples/libcalc
       env:
@@ -55,9 +61,10 @@ jobs:
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
         MSYS2_PATH_TYPE: inherit
       run: |
-        $SBCL_SRC/run-sbcl.sh --script script.lisp
-        ${{ matrix.cc }} -Wall -fPIC -shared -Wl,--export-all-symbols -o libcalc.dll libcalc.c -Wl,--whole-archive $SBCL_SRC/src/runtime/libsbcl.a -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd
-        ${{ matrix.cc }} -Wall -o example example.c -lcalc -L.
+        conda install --offline ${{ github.workspace }}/conda-bld/osx-64/
+        $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
+        ${{ matrix.cc }} -Wall -fPIC -shared -Wl,--export-all-symbols -o libcalc.dll libcalc.c -Wl,--whole-archive $SBCL_SRC/src/runtime/libsbcl.a -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd -I../../lib
+        ${{ matrix.cc }} -Wall -o example example.c -lcalc -L. -I../../lib
         mv libcalc.dll $MSYSTEM_PREFIX/bin
         cp libcalc.core $MSYSTEM_PREFIX/bin
         echo "(+ 1 2)" | ./example.exe | tr -d '\r\n' | grep "> 3> "

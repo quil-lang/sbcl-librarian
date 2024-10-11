@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
 
   while (fgets(source, sizeof(source), stdin) != NULL) {
     expr_type expr;
-    if (calc_parse(source, &expr) != ERR_SUCCESS)
+    if (calc_parse(source, &expr) != LISP_ERR_SUCCESS)
       die("unable to parse expression");
 
     char *result;
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     else
       calc_simplify(expr, &simplified_expr);
 
-    if (calc_expression_to_string(simplified_expr, &result) != ERR_SUCCESS)
+    if (calc_expression_to_string(simplified_expr, &result) != LISP_ERR_SUCCESS)
       die("unable to print expression to string");
 
     printf("\n%s\n> ", result);

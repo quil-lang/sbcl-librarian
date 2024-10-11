@@ -6,7 +6,7 @@ ROOT_DIR := $(shell dirname $(shell dirname $(EXAMPLES_DIR)))
 all: example
 
 example: libsbcl.so libcalc.dylib
-	$(CC) example.c -o example -lsbcl -lcalc -L.
+	$(CC) example.c -o example -lsbcl -lcalc -L. -I$(ROOT_DIR)/lib
 
 # For some reason, even on OSX SBCL builds its library with *.so
 # extension, but this works!
@@ -15,9 +15,9 @@ libsbcl.so: $(SBCL_SRC)
 	cp $(SBCL_SRC)/src/runtime/libsbcl.so ./
 
 libcalc.core libcalc.c libcalc.h libcalc.py: libcalc.lisp
-	CL_SOURCE_REGISTRY="$(ROOT_DIR)//" $(SBCL_SRC)/run-sbcl.sh --script "script.lisp"
+	CL_SOURCE_REGISTRY="$(ROOT_DIR)//" $(SBCL_SRC)/run-sbcl.sh --load "script.lisp" --quit
 
 libcalc.dylib: libcalc.core libcalc.c
-	$(CC) -dynamiclib -o $@ libcalc.c -L$(SBCL_SRC)/src/runtime -lsbcl
+	$(CC) -dynamiclib -o $@ libcalc.c -L$(SBCL_SRC)/src/runtime -lsbcl -I$(ROOT_DIR)/lib
 clean:
 	rm -f example libsbcl.so libcalc.c libcalc.h libcalc.core libcalc.py libcalc.dylib

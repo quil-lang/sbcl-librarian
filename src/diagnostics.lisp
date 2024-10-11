@@ -36,7 +36,7 @@
 (defun profiler-report (args)
   (apply #'sb-sprof:report (read-from-string args)))
 
-(sbcl-librarian:define-api diagnostics (:function-prefix "")
+(define-api diagnostics (:function-prefix "")
   (:function
    (("lisp_memory_report" memory-report) :void ())
    (("lisp_dynamic_usage" sb-kernel:dynamic-usage) :uint64 ())

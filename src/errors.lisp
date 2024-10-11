@@ -1,5 +1,10 @@
 (in-package #:sbcl-librarian)
 
+(define-type :json
+  :c-type "char*"
+  :python-type "c_char_p"
+  :alien-type sb-alien:c-string)
+
 (define-enum-type error-type "lisp_err_t"
   ("LISP_ERR_SUCCESS" 0)
   ("LISP_ERR_FAILURE" 1)
@@ -26,47 +31,46 @@
       (loop (push 1 test)))))
 
 (define-error-map default-error-map error-type (:no-error 0 :fatal-error 3)
-  ((warning #'continue)
+                  ((cl:warning #'continue)
 
-   (sbcl-librarian:lisp-error
-    (lambda (c)
-      (when *show-backtrace*
-	(sb-debug:print-backtrace
-         :stream *error-output*
-         :emergency-best-effort t))
-      (setf *error-message* (format nil "~A" c))
-      (return-from default-error-map 1)))
+                   (lisp-error
+                    (lambda (c)
+                      (when *show-backtrace*
+	                (sb-debug:print-backtrace
+                         :stream *error-output*
+                         :emergency-best-effort t))
+                      (setf *error-message* (format nil "~A" c))
+                      (return-from default-error-map 1)))
 
-   (sbcl-librarian:lisp-bug
-    (lambda (c)
-      (when *show-backtrace*
-        (sb-debug:print-backtrace
-         :stream *error-output*
-         :emergency-best-effort t))
+                   (lisp-bug
+                    (lambda (c)
+                      (when *show-backtrace*
+                        (sb-debug:print-backtrace
+                         :stream *error-output*
+                         :emergency-best-effort t))
 
-      (let ((sbcl-librarian:*print-backtrace-in-bug* t))
-        (setf *error-message* (format nil "~A" c)))
+                      (let ((*print-backtrace-in-bug* t))
+                        (setf *error-message* (format nil "~A" c)))
 
-      (return-from default-error-map 2)))
+                      (return-from default-error-map 2)))
 
-   (error
-    (lambda (c)
-      (let ((bug (make-instance 'sbcl-librarian:lisp-bug
-                                :reason (format nil "~A" c)
-                                :args nil
-                                :backtrace (with-output-to-string (s)
-                                             (sb-debug:print-backtrace
-                                              :stream s
-                                              :emergency-best-effort t)))))
+                   (cl:error
+                    (lambda (c)
+                      (let ((bug (make-instance 'lisp-bug
+                                                :reason (format nil "~A" c)
+                                                :args nil
+                                                :backtrace (with-output-to-string (s)
+                                                             (sb-debug:print-backtrace
+                                                              :stream s
+                                                              :emergency-best-effort t)))))
 
-        (let ((sbcl-librarian:*print-backtrace-in-bug* t))
-          (setf *error-message* (format nil "~A" bug)))
+                        (let ((*print-backtrace-in-bug* t))
+                          (setf *error-message* (format nil "~A" bug)))
 
-        (return-from default-error-map 2))))))
+                        (return-from default-error-map 2))))))
 
-(sbcl-librarian:define-api errors (:error-map default-error-map)
-  (:literal "/* lisp */")
-  (:type error-type)
+(define-api errors ()
+  (:literal "/* errors */")
   (:function
    (get-error-message :string ())
    (enable-backtrace :void ((on :int)))

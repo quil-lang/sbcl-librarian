@@ -15,6 +15,7 @@ source:
   - path: build.ps1                   # [win]
 
 build:
+  binary_relocation: False
   script_env:
     - LIBRARY_PATH
     - DYLD_LIBRARY_PATH # [osx]

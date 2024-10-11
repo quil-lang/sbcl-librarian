@@ -60,6 +60,7 @@ jobs:
         DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime:.
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
       run: |
+        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian
         $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
         gcc -Wall -fPIC -shared -o libcalc.dylib libcalc.c -lsbcl -I../../lib
         gcc -Wall -o example example.c -lcalc -lsbcl -I../../lib

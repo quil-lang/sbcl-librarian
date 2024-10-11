@@ -61,6 +61,7 @@ jobs:
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
         MSYS2_PATH_TYPE: inherit
       run: |
+        conda install --offline ${{ github.workspace }}/conda-bld/osx-64/
         $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
         ${{ matrix.cc }} -Wall -fPIC -shared -Wl,--export-all-symbols -o libcalc.dll libcalc.c -Wl,--whole-archive $SBCL_SRC/src/runtime/libsbcl.a -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd -I../../lib
         ${{ matrix.cc }} -Wall -o example example.c -lcalc -L. -I../../lib

@@ -59,3 +59,4 @@ Process resources SBCL uses:
   so the compiler can generate manifest literal addresses in machine
   code on some platforms, as well as to compute stable hashes of
   certain constants like NIL.
+

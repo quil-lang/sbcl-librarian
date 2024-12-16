@@ -17,3 +17,7 @@
 *.wx32fsl
 
 __pycache__
+
+*~
+\#*
+**/build

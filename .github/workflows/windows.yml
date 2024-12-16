@@ -55,7 +55,7 @@ jobs:
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
         MSYS2_PATH_TYPE: inherit
       run: |
-        $SBCL_SRC/run-sbcl.sh --script script.lisp
+        $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
         ${{ matrix.cc }} -Wall -fPIC -shared -Wl,--export-all-symbols -o libcalc.dll libcalc.c -Wl,--whole-archive $SBCL_SRC/src/runtime/libsbcl.a -Wl,--no-whole-archive -ladvapi32 -lsynchronization -lws2_32 -lzstd
         ${{ matrix.cc }} -Wall -o example example.c -lcalc -L.
         mv libcalc.dll $MSYSTEM_PREFIX/bin

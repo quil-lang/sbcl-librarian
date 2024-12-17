@@ -16,7 +16,7 @@ if(WIN32)
 endif(WIN32)
 
 if(DEFINED ENV{SBCL_SRC})
-    set(SBCL "$ENV{SBCL_SRC}/run-sbcl.sh")
+    set(SBCL sh "$ENV{SBCL_SRC}/run-sbcl.sh")
 else()
     set(SBCL "sbcl")
 endif()

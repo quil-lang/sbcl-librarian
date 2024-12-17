@@ -12,6 +12,10 @@ jobs:
         arch: [arm64]
       fail-fast: false
 
+    defaults:
+      run:
+        shell: bash -el {0}
+
     steps:
     - uses: actions/checkout@v1
     - uses: actions/checkout@v1
@@ -19,6 +23,9 @@ jobs:
         repository: sbcl/sbcl
         ref: ${{ matrix.arch == 'arm64' && 'sbcl-2.4.6' || 'x86-null-tn' }}
         path: sbcl
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        channels: conda-forge
     - name: install host sbcl
       run: brew install sbcl
     - name: build
@@ -35,31 +42,16 @@ jobs:
       run: |
         curl -O https://beta.quicklisp.org/quicklisp.lisp
         ./run-sbcl.sh --load quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))" --eval "(quit)"
-    - name: install conda
-      run: |
-        mkdir -p ~/miniconda3
-        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
-        bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
-        rm ~/miniconda3/miniconda.sh
-    - name: install conda-build
-      run: |
-        source ~/miniconda3/etc/profile.d/conda.sh
-        conda activate
-        conda config --add channels conda-forge
-        conda install -y conda-build
     - name: build and install conda package
       env:
         LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
         DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
       run: |
-        source ~/miniconda3/etc/profile.d/conda.sh
-        conda activate
+        conda install -y conda-build
         conda build recipe --output-folder conda-bld
         conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian
     - name: set environment variables
       run: |
-        source ~/miniconda3/etc/profile.d/conda.sh
-        conda activate
         echo "LIBRARY_PATH=$LIBSBCL_PATH:$CONDA_PREFIX/lib" >> "$GITHUB_ENV"
         echo "DYLD_LIBRARY_PATH=$LIBSBCL_PATH:$CONDA_PREFIX/lib" >> "$GITHUB_ENV"
         echo "C_INCLUDE_PATH=$CONDA_PREFIX/include" >> "$GITHUB_ENV"
@@ -68,8 +60,6 @@ jobs:
       env:
         CL_SOURCE_REGISTRY: "${{ github.workspace }}//"
       run: |
-        source ~/miniconda3/etc/profile.d/conda.sh
-        conda activate
         $SBCL_SRC/run-sbcl.sh --load script.lisp --quit
         pushd libcalc
         mkdir build

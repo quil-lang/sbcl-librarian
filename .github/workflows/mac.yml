@@ -48,7 +48,7 @@ jobs:
         DYLD_LIBRARY_PATH: ${{ github.workspace }}/../sbcl/src/runtime
       run: |
         conda install -y conda-build
-        conda build recipe --output-folder conda-bld -e recipe/ci_build_config.yaml
+        conda build recipe --output-folder conda-bld
         conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian
     - name: set environment variables
       run: |

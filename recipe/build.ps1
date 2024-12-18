@@ -2,9 +2,9 @@ pushd lib
 mkdir build
 pushd build
 # Build libsbcl_librarian
-& $env:MSYS2_CMD -c 'cmake -DCMAKE_PREFIX_PATH=$BUILD_PREFIX -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE=RelWithDebInfo -G ''MSYS Makefiles'' ..'
-& $env:MSYS2_CMD -c "cmake --build ."
-& $env:MSYS2_CMD -c "cmake --install ."
+& $env:MSYS2_CMD -lc 'cmake -DCMAKE_PREFIX_PATH=$BUILD_PREFIX -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE=RelWithDebInfo -G ''MSYS Makefiles'' ..'
+& $env:MSYS2_CMD -lc "cmake --build ."
+& $env:MSYS2_CMD -lc "cmake --install ."
 popd
 popd
 

@@ -30,7 +30,8 @@ requirements:
 {% if not environ.get('SBCL_SRC') %}
     - sbcl={{ environ.get('CONDA_BUILD_SBCL_VERSION', '2.4.0') }}
 {% endif %}
-  host:
-    - python {{ python }}
   run:
     - python {{ python }}
+{% if not environ.get('SBCL_SRC') %}
+    - sbcl={{ environ.get('CONDA_BUILD_SBCL_VERSION', '2.4.0') }}
+{% endif %}

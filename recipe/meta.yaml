@@ -24,10 +24,17 @@ build:
     - MSYS2_CMD         # [win]
 
 requirements:
-  build:
-    - cmake
   host:
     - python {{ python }}
+  build:
+    - cmake
 {% if not environ.get('SBCL_SRC') %}
     - sbcl={{ environ.get('CONDA_BUILD_SBCL_VERSION', '2.4.0') }}
 {% endif %}
+  run:
+    - python {{ python }}
+{% for package in resolved_packages('build') %}
+  {% if package.startswith('sbcl') %}
+    - {{ package }}
+  {% endif %}
+{% endfor %}

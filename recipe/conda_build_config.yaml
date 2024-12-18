@@ -1,6 +1,6 @@
 python:
-  - 3.10
-  - 3.11
+  - 3.10 # ['GITHUB_ACTIONS' not in os.environ]
+  - 3.11 # ['GITHUB_ACTIONS' not in os.environ]
   - 3.12
 
 c_compiler:    # [win]

@@ -64,8 +64,8 @@ jobs:
       shell: pwsh
       run: |
         conda install conda-build
-        conda build recipe --output-folder conda-bld -e recipe/ci_build_config.yaml
-        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian python
+        conda build recipe --output-folder conda-bld
+        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian
     - name: set environment variables
       shell: pwsh
       run: |

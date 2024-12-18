@@ -1,4 +1,4 @@
-(when (uiop:getenv "CI")
+(when (uiop:getenv "GITHUB_ACTIONS")
   (push :github-ci *features*))
 
 (ql:quickload :libcalc)

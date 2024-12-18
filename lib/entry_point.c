@@ -14,7 +14,10 @@
 # include <Process.h>
 # include <psapi.h>
 
-__thread intptr_t fatal_lisp_error_handler[5];
+__thread intptr_t _fatal_lisp_error_handler[5];
+intptr_t *fatal_lisp_error_handler(void) {
+    return _fatal_lisp_error_handler;
+}
 #else
 # include <dlfcn.h>
 

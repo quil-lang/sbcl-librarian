@@ -84,11 +84,13 @@ if (!setjmp(fatal_lisp_error_handler)) {
                                           (list "result"))))))
         (format nil "~a {~%~a~%}~%"
                 header
-                (format nil "    if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler)) {
+                (format nil "    if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler~a)) {
         ~a
     } else {
         ~a
     }"
+                        ;; fatal_lisp_error_handler is a thunk on Windows
+                        #+win32 "()" #-win32 ""
                         call-statement
                         ;; If the error map does not have specify a
                         ;; fatal error code, then drop into LDB.

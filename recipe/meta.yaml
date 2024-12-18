@@ -25,7 +25,7 @@ build:
 
 requirements:
   build:
-    - python
+    - python {{ python }}
     - cmake
 {% if not environ.get('SBCL_SRC') %}
     - sbcl={{ environ.get('CONDA_BUILD_SBCL_VERSION', '2.4.0') }}

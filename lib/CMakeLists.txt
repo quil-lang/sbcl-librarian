@@ -15,10 +15,16 @@ if(WIN32)
   set_target_properties(sbcl_librarian PROPERTIES PREFIX "")
 endif(WIN32)
 
+if(DEFINED ENV{SBCL_SRC})
+    set(SBCL sh "$ENV{SBCL_SRC}/run-sbcl.sh")
+else()
+    set(SBCL "sbcl")
+endif()
+
 # Generate the core file and C bindings
 add_custom_command(
   OUTPUT sbcl_librarian.c sbcl_librarian.h
-  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/..// sh $ENV{SBCL_SRC}/run-sbcl.sh --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
+  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/..// ${SBCL} --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

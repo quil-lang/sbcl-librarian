@@ -59,8 +59,13 @@
  * __builtin_setjmp and __builtin_longjmp use a jump buffer of type
  * intptr_t[5] instead of jmp_buf (see
  * https://gcc.gnu.org/onlinedocs/gcc/Nonlocal-Gotos.html).
+ *
+ * Also, you cannot declare a variable as both __thread and
+ * __declspec(dllexport) on Windows, so we export a thunk to get the
+ * thread-local variable instead.
  */
-extern __thread LIBSBCL_LIBRARIAN_ERR_API intptr_t fatal_lisp_error_handler[5];
+extern __thread intptr_t _fatal_lisp_error_handler[5];
+extern LIBSBCL_LIBRARIAN_ERR_API intptr_t *fatal_lisp_error_handler(void);
 #else
 # include <setjmp.h>
 

@@ -5,7 +5,7 @@
 #+win32
 (setq uiop:*compile-file-failure-behaviour* :warn)
 
-(when (uiop:getenv "CI")
+(when (uiop:getenv "GITHUB_ACTIONS")
   (push :github-ci *features*))
 
 (asdf:load-system :sbcl-librarian)

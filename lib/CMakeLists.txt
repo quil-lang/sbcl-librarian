@@ -7,7 +7,12 @@ include(GNUInstallDirs)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_library(sbcl_librarian SHARED sbcl_librarian.c sbcl_librarian.h sbcl_librarian_err.h entry_point.c)
+if(WIN32)
+# DLLs go to the bin/ directory on Windows
+target_link_directories(sbcl_librarian PRIVATE $ENV{BUILD_PREFIX}/Library/bin)
+else()
 target_link_directories(sbcl_librarian PRIVATE $ENV{BUILD_PREFIX}/lib)
+endif()
 target_link_libraries(sbcl_librarian PUBLIC sbcl)
 
 # Drop the lib prefix on the Windows DLL

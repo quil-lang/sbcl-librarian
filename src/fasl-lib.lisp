@@ -1,6 +1,6 @@
 (in-package #:sbcl-librarian)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
+(eval-when (:compile-toplevel)
   (defparameter *incbin-filename* "incbin.h"
     "The name of the file containing the incbin source code.")
   (defparameter *incbin-source-text*

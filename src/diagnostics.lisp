@@ -23,7 +23,7 @@
 
 (defun start-swank-server (port)
   (sb-ext:enable-debugger)
-  (swank:create-server :port port :dont-close t)
+  (uiop:symbol-call "SWANK" "CREATE-SERVER" :port port :dont-close t)
   (values))
 
 (defun perform-gc ()

@@ -7,7 +7,6 @@
   ; :version "0.0.1"
   :in-order-to ((test-op (test-op "sbcl-librarian/tests")))
   :depends-on (#:sb-sprof
-               #:swank
                )
   :serial t
   :pathname "src/"

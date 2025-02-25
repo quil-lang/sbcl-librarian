@@ -1,8 +1,10 @@
 (in-package #:sbcl-librarian)
 
-(eval-when (:compile-toplevel)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *incbin-filename* "incbin.h"
-    "The name of the file containing the incbin source code.")
+    "The name of the file containing the incbin source code."))
+
+(eval-when (:compile-toplevel)
   (defparameter *incbin-source-text*
     (uiop:read-file-string
      (asdf:system-relative-pathname "sbcl-librarian"

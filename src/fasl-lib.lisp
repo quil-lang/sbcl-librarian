@@ -1,15 +1,20 @@
 (in-package #:sbcl-librarian)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *incbin-filename* "incbin.h"
-    "The name of the file containing the incbin source code."))
+  (defconstant +incbin-filename+
+    (if (boundp '+incbin-filename+)
+        +incbin-filename+
+        "incbin.h")
+    "The name of the file containing the incbin source code.")
 
-(eval-when (:compile-toplevel)
-  (defparameter *incbin-source-text*
-    (uiop:read-file-string
-     (asdf:system-relative-pathname "sbcl-librarian"
-                                    (uiop:merge-pathnames* *incbin-filename* "src/")))
+  (defconstant +incbin-source-text+
+    (if (boundp '+incbin-source-text+)
+        +incbin-source-text+
+        (uiop:read-file-string
+         (asdf:system-relative-pathname "sbcl-librarian"
+                                        (uiop:merge-pathnames* +incbin-filename+ "src/"))))
     "The full source code of incbin."))
+
 
 (defparameter *fasl-loader-filename* "fasl_loader.c"
   "The name of the C source file that contains both embedded FASLs and a
@@ -55,8 +60,8 @@ skipping those for already-loaded systems."
 
 (defun create-incbin-source-file (directory)
   "Copy the incbin source code to DIRECTORY."
-  (with-open-file (stream (uiop:merge-pathnames* *incbin-filename* directory) :direction :output :if-exists :supersede)
-    (format stream *incbin-source-text*)))
+  (with-open-file (stream (uiop:merge-pathnames* +incbin-filename+ directory) :direction :output :if-exists :supersede)
+    (format stream +incbin-source-text+)))
 
 (defun system-c-name (system)
   "Replaces #\-, #\/, and #\. with #\_ in SYSTEM's name so as to produce
@@ -146,7 +151,7 @@ library and its header file."
   (let* ((c-name (library-c-name library))
          (bindings-filename (concatenate 'string c-name ".c"))
          (loadable-systems (remove-if-not #'system-loadable-from-fasl-p systems))
-         (source-filenames (append (list bindings-filename *incbin-filename* *fasl-loader-filename*)
+         (source-filenames (append (list bindings-filename +incbin-filename+ *fasl-loader-filename*)
                                    (mapcar #'system-fasl-bundle-filename loadable-systems))))
     (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output :if-exists :supersede)
       (format stream "cmake_minimum_required(VERSION ~A)~%" *cmake-minimum-required*)

@@ -49,7 +49,7 @@ jobs:
       run: |
         conda install -y conda-build
         conda build recipe --output-folder conda-bld
-        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian
+        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian python=3.12
     - name: set environment variables
       run: |
         echo "LIBRARY_PATH=$LIBSBCL_PATH:$CONDA_PREFIX/lib" >> "$GITHUB_ENV"

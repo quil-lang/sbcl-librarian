@@ -65,7 +65,7 @@ jobs:
       run: |
         conda install conda-build
         conda build recipe --output-folder conda-bld
-        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian
+        conda install -c ${{ github.workspace }}/conda-bld/ sbcl-librarian python=3.12
     - name: set environment variables
       shell: pwsh
       run: |

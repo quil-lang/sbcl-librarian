@@ -24,6 +24,7 @@
                (:file "handles")
                (:file "loader")
                (:file "environment")
+               (:file "incbin")
                (:file "fasl-lib")
                (:file "diagnostics")
                ))

@@ -12,25 +12,25 @@
 #ifndef INCBIN_HDR
 #define INCBIN_HDR
 #include <limits.h>
-#if   defined(__AVX512BW__) || \
-      defined(__AVX512CD__) || \
-      defined(__AVX512DQ__) || \
-      defined(__AVX512ER__) || \
-      defined(__AVX512PF__) || \
-      defined(__AVX512VL__) || \
+#if   defined(__AVX512BW__) || \\
+      defined(__AVX512CD__) || \\
+      defined(__AVX512DQ__) || \\
+      defined(__AVX512ER__) || \\
+      defined(__AVX512PF__) || \\
+      defined(__AVX512VL__) || \\
       defined(__AVX512F__)
 # define INCBIN_ALIGNMENT_INDEX 6
-#elif defined(__AVX__)      || \
+#elif defined(__AVX__)      || \\
       defined(__AVX2__)
 # define INCBIN_ALIGNMENT_INDEX 5
-#elif defined(__SSE__)      || \
-      defined(__SSE2__)     || \
-      defined(__SSE3__)     || \
-      defined(__SSSE3__)    || \
-      defined(__SSE4_1__)   || \
-      defined(__SSE4_2__)   || \
-      defined(__neon__)     || \
-      defined(__ARM_NEON)   || \
+#elif defined(__SSE__)      || \\
+      defined(__SSE2__)     || \\
+      defined(__SSE3__)     || \\
+      defined(__SSSE3__)    || \\
+      defined(__SSE4_1__)   || \\
+      defined(__SSE4_2__)   || \\
+      defined(__neon__)     || \\
+      defined(__ARM_NEON)   || \\
       defined(__ALTIVEC__)
 # define INCBIN_ALIGNMENT_INDEX 4
 #elif ULONG_MAX != 0xffffffffu
@@ -49,25 +49,25 @@
 #define INCBIN_ALIGN_SHIFT_6 64
 
 /* Actual alignment value */
-#define INCBIN_ALIGNMENT \
-    INCBIN_CONCATENATE( \
-        INCBIN_CONCATENATE(INCBIN_ALIGN_SHIFT, _), \
+#define INCBIN_ALIGNMENT \\
+    INCBIN_CONCATENATE( \\
+        INCBIN_CONCATENATE(INCBIN_ALIGN_SHIFT, _), \\
         INCBIN_ALIGNMENT_INDEX)
 
 /* Stringize */
-#define INCBIN_STR(X) \
+#define INCBIN_STR(X) \\
     #X
-#define INCBIN_STRINGIZE(X) \
+#define INCBIN_STRINGIZE(X) \\
     INCBIN_STR(X)
 /* Concatenate */
-#define INCBIN_CAT(X, Y) \
+#define INCBIN_CAT(X, Y) \\
     X ## Y
-#define INCBIN_CONCATENATE(X, Y) \
+#define INCBIN_CONCATENATE(X, Y) \\
     INCBIN_CAT(X, Y)
 /* Deferred macro expansion */
-#define INCBIN_EVAL(X) \
+#define INCBIN_EVAL(X) \\
     X
-#define INCBIN_INVOKE(N, ...) \
+#define INCBIN_INVOKE(N, ...) \\
     INCBIN_EVAL(N(__VA_ARGS__))
 /* Variable argument count for overloading by arity */
 #define INCBIN_VA_ARG_COUNTER(_1, _2, _3, N, ...) N
@@ -86,14 +86,14 @@
 #endif
 
 #ifndef _MSC_VER
-#  define INCBIN_ALIGN \
+#  define INCBIN_ALIGN \\
     __attribute__((aligned(INCBIN_ALIGNMENT)))
 #else
 #  define INCBIN_ALIGN __declspec(align(INCBIN_ALIGNMENT))
 #endif
 
-#if defined(__arm__) || /* GNU C and RealView */ \
-    defined(__arm) || /* Diab */ \
+#if defined(__arm__) || /* GNU C and RealView */ \\
+    defined(__arm) || /* Diab */ \\
     defined(_ARM) /* ImageCraft */
 #  define INCBIN_ARM
 #endif
@@ -258,34 +258,34 @@
 #define INCBIN_STYLE_1_SIZE _size
 
 /* Style lookup: returning identifier */
-#define INCBIN_STYLE_IDENT(TYPE) \
-    INCBIN_CONCATENATE( \
-        INCBIN_STYLE_, \
-        INCBIN_CONCATENATE( \
-            INCBIN_EVAL(INCBIN_STYLE), \
+#define INCBIN_STYLE_IDENT(TYPE) \\
+    INCBIN_CONCATENATE( \\
+        INCBIN_STYLE_, \\
+        INCBIN_CONCATENATE( \\
+            INCBIN_EVAL(INCBIN_STYLE), \\
             INCBIN_CONCATENATE(_, TYPE)))
 
 /* Style lookup: returning string literal */
-#define INCBIN_STYLE_STRING(TYPE) \
-    INCBIN_STRINGIZE( \
-        INCBIN_STYLE_IDENT(TYPE)) \
+#define INCBIN_STYLE_STRING(TYPE) \\
+    INCBIN_STRINGIZE( \\
+        INCBIN_STYLE_IDENT(TYPE)) \\
 
 /* Generate the global labels by indirectly invoking the macro with our style
  * type and concatenating the name against them. */
-#define INCBIN_GLOBAL_LABELS(NAME, TYPE) \
-    INCBIN_INVOKE( \
-        INCBIN_GLOBAL, \
-        INCBIN_CONCATENATE( \
-            NAME, \
-            INCBIN_INVOKE( \
-                INCBIN_STYLE_IDENT, \
-                TYPE))) \
-    INCBIN_INVOKE( \
-        INCBIN_TYPE, \
-        INCBIN_CONCATENATE( \
-            NAME, \
-            INCBIN_INVOKE( \
-                INCBIN_STYLE_IDENT, \
+#define INCBIN_GLOBAL_LABELS(NAME, TYPE) \\
+    INCBIN_INVOKE( \\
+        INCBIN_GLOBAL, \\
+        INCBIN_CONCATENATE( \\
+            NAME, \\
+            INCBIN_INVOKE( \\
+                INCBIN_STYLE_IDENT, \\
+                TYPE))) \\
+    INCBIN_INVOKE( \\
+        INCBIN_TYPE, \\
+        INCBIN_CONCATENATE( \\
+            NAME, \\
+            INCBIN_INVOKE( \\
+                INCBIN_STYLE_IDENT, \\
                 TYPE)))
 
 /**
@@ -319,22 +319,22 @@
  * // extern const unsigned int <prefix>Foo<size>;
  * @endcode
  */
-#define INCBIN_EXTERN(...) \
+#define INCBIN_EXTERN(...) \\
     INCBIN_CONCATENATE(INCBIN_EXTERN_, INCBIN_VA_ARGC(__VA_ARGS__))(__VA_ARGS__)
-#define INCBIN_EXTERN_1(NAME, ...) \
+#define INCBIN_EXTERN_1(NAME, ...) \\
     INCBIN_EXTERN_2(unsigned char, NAME)
-#define INCBIN_EXTERN_2(TYPE, NAME) \
-    INCBIN_EXTERNAL const INCBIN_ALIGN TYPE \
-        INCBIN_CONCATENATE( \
-            INCBIN_CONCATENATE(INCBIN_PREFIX, NAME), \
-            INCBIN_STYLE_IDENT(DATA))[]; \
-    INCBIN_EXTERNAL const INCBIN_ALIGN TYPE *const \
-    INCBIN_CONCATENATE( \
-        INCBIN_CONCATENATE(INCBIN_PREFIX, NAME), \
-        INCBIN_STYLE_IDENT(END)); \
-    INCBIN_EXTERNAL const unsigned int \
-        INCBIN_CONCATENATE( \
-            INCBIN_CONCATENATE(INCBIN_PREFIX, NAME), \
+#define INCBIN_EXTERN_2(TYPE, NAME) \\
+    INCBIN_EXTERNAL const INCBIN_ALIGN TYPE \\
+        INCBIN_CONCATENATE( \\
+            INCBIN_CONCATENATE(INCBIN_PREFIX, NAME), \\
+            INCBIN_STYLE_IDENT(DATA))[]; \\
+    INCBIN_EXTERNAL const INCBIN_ALIGN TYPE *const \\
+    INCBIN_CONCATENATE( \\
+        INCBIN_CONCATENATE(INCBIN_PREFIX, NAME), \\
+        INCBIN_STYLE_IDENT(END)); \\
+    INCBIN_EXTERNAL const unsigned int \\
+        INCBIN_CONCATENATE( \\
+            INCBIN_CONCATENATE(INCBIN_PREFIX, NAME), \\
             INCBIN_STYLE_IDENT(SIZE))
 
 /**
@@ -357,7 +357,7 @@
  * // extern const unsigned int <prefix>Foo<size>;
  * @endcode
  */
-#define INCTXT_EXTERN(NAME) \
+#define INCTXT_EXTERN(NAME) \\
     INCBIN_EXTERN_2(char, NAME)
 
 /**
@@ -400,10 +400,10 @@
  * please @see INCBIN_EXTERN.
  */
 #ifdef _MSC_VER
-#  define INCBIN(NAME, FILENAME) \
+#  define INCBIN(NAME, FILENAME) \\
       INCBIN_EXTERN(NAME)
 #else
-#  define INCBIN(...) \
+#  define INCBIN(...) \\
      INCBIN_CONCATENATE(INCBIN_, INCBIN_VA_ARGC(__VA_ARGS__))(__VA_ARGS__)
 #  if defined(__GNUC__)
 #    define INCBIN_1(...) _Pragma(\"GCC error \"Single argument INCBIN not allowed\"\")
@@ -412,28 +412,28 @@
 #  else
 #    define INCBIN_1(...) /* Cannot do anything here */
 #  endif
-#  define INCBIN_2(NAME, FILENAME) \
+#  define INCBIN_2(NAME, FILENAME) \\
       INCBIN_3(unsigned char, NAME, FILENAME)
 #  define INCBIN_3(TYPE, NAME, FILENAME) INCBIN_COMMON(TYPE, NAME, FILENAME, /* No terminator for binary data */)
-#  define INCBIN_COMMON(TYPE, NAME, FILENAME, TERMINATOR) \
-    __asm__(INCBIN_SECTION \
-            INCBIN_GLOBAL_LABELS(NAME, DATA) \
-            INCBIN_ALIGN_HOST \
-            INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(DATA) \":\n\" \
-            INCBIN_MACRO \" \"\" FILENAME \"\"\n\" \
-                TERMINATOR \
-            INCBIN_GLOBAL_LABELS(NAME, END) \
-            INCBIN_ALIGN_BYTE \
-            INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(END) \":\n\" \
-                INCBIN_BYTE \"1\n\" \
-            INCBIN_GLOBAL_LABELS(NAME, SIZE) \
-            INCBIN_ALIGN_HOST \
-            INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(SIZE) \":\n\" \
-                INCBIN_INT INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(END) \" - \" \
-                           INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(DATA) \"\n\" \
-            INCBIN_ALIGN_HOST \
-            \".text\n\" \
-    ); \
+#  define INCBIN_COMMON(TYPE, NAME, FILENAME, TERMINATOR) \\
+    __asm__(INCBIN_SECTION \\
+            INCBIN_GLOBAL_LABELS(NAME, DATA) \\
+            INCBIN_ALIGN_HOST \\
+            INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(DATA) \":\n\" \\
+            INCBIN_MACRO \" \"\" FILENAME \"\"\n\" \\
+                TERMINATOR \\
+            INCBIN_GLOBAL_LABELS(NAME, END) \\
+            INCBIN_ALIGN_BYTE \\
+            INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(END) \":\n\" \\
+                INCBIN_BYTE \"1\n\" \\
+            INCBIN_GLOBAL_LABELS(NAME, SIZE) \\
+            INCBIN_ALIGN_HOST \\
+            INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(SIZE) \":\n\" \\
+                INCBIN_INT INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(END) \" - \" \\
+                           INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME INCBIN_STYLE_STRING(DATA) \"\n\" \\
+            INCBIN_ALIGN_HOST \\
+            \".text\n\" \\
+    ); \\
     INCBIN_EXTERN(TYPE, NAME)
 #endif
 
@@ -469,10 +469,10 @@
  * please @see INCBIN_EXTERN.
  */
 #if defined(_MSC_VER)
-#  define INCTXT(NAME, FILENAME) \
+#  define INCTXT(NAME, FILENAME) \\
      INCBIN_EXTERN(NAME)
 #else
-#  define INCTXT(NAME, FILENAME) \
+#  define INCTXT(NAME, FILENAME) \\
      INCBIN_COMMON(char, NAME, FILENAME, INCBIN_BYTE \"0\n\")
 #endif
 

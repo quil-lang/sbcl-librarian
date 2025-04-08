@@ -38,20 +38,30 @@ initialized to OUTPUT-TRANSLATIONS."
     (lambda ()
       ,@body)))
 
+(defun system-fasl-bundle-location (system)
+  "The full path to SYSTEM's compiled bundle FASL."
+  (asdf:system-relative-pathname system (system-fasl-bundle-filename system)))
+
 (defun compile-bundle-system-with-dependencies (target-system directory)
   "Compile TARGET-SYSTEM and all of its required systems into a single
 FASL bundle file per system, placing the FASL bundle files in
 DIRECTORY."
-  (with-output-translations
-      `(:output-translations
-        :inherit-configuration
-        ,@(loop :for system :in (cons target-system (system-dependencies-in-load-order target-system))
-                :for fasl-filename := (system-fasl-bundle-filename system)
-                :when (system-loadable-from-fasl-p system)
-                  :collect `((,(asdf:component-pathname system) ,fasl-filename)
-                             (,directory ,(directory-namestring fasl-filename)))))
-    (with-recursive-compile-bundle-op
-      (asdf:oos 'asdf:compile-bundle-op target-system))))
+  (let ((dependency-systems (system-dependencies-in-load-order target-system)))
+    (with-output-translations
+        `(:output-translations
+          :inherit-configuration
+          (t ,directory))
+      (with-recursive-compile-bundle-op
+        (asdf:oos 'asdf:compile-bundle-op target-system))
+      (let ((prebuilt-systems (mapcan (lambda (system)
+                                        (if (uiop:file-exists-p (system-fasl-bundle-location system))
+                                            (list system)
+                                            (mapcar #'asdf:find-system (asdf:system-depends-on system))))
+                                      (remove-if-not #'prebuilt-system-p dependency-systems))))
+        (dolist (system prebuilt-systems)
+          (let ((dest-file (uiop:merge-pathnames* (system-fasl-bundle-filename system) directory)))
+            (ensure-directories-exist dest-file)
+            (uiop:copy-file (system-fasl-bundle-location system) dest-file)))))))
 
 (defun system-dependencies-in-load-order (system)
   "Return a list of all the required systems for SYSTEM topologically
@@ -69,22 +79,35 @@ sorted by load order."
                               :goal-operation 'asdf:compile-bundle-op
                               :keep-operation 'asdf:compile-bundle-op)))
 
-(defun system-fasl-bundle-filename (system)
+(defun system-fasl-bundle-filename (system &key (no-slashes-p t))
   "Returns the name of the FASL bundle file produced by performing
 COMPILE-BUNDLE-OP on SYSTEM."
-  (let ((files (asdf:output-files 'asdf:compile-bundle-op system)))
-    (if (null files)
+  (let* ((files (asdf:output-files 'asdf:compile-bundle-op system))
+         (system-name (asdf:component-name system))
+         (no-slashes-name (format nil "~{~A~^--~}" (uiop:split-string system-name :separator "/"))))
+    (if (and (null files) (not (prebuilt-system-p system)))
         nil
         (uiop:parse-native-namestring
-         (concatenate 'string (asdf:component-name system) "--system.fasl")))))
+         (concatenate 'string (if no-slashes-p no-slashes-name system-name) "--system.fasl")))))
 
 (defun require-system-p (system)
   "Returns T if SYSTEM is a REQUIRE-SYSTEM, otherwise returns NIL."
   (typep system 'asdf:require-system))
+
+(defun prebuilt-system-p (system)
+  "Returns T if SYSTEM is a PREBUILT-SYSTEM, otherwise returns NIL."
+  (typep system 'asdf/bundle:prebuilt-system))
+
+(defun compiled-file-p (component)
+  "Returns T if COMPONENT is a COMPILED-FILE, otherwise returns NIL."
+  (typep component 'asdf/bundle:compiled-file))
 
 (defun system-loadable-from-fasl-p (system)
   "Returns T if SYSTEM is not a REQUIRE-SYSTEM and performing
 COMPILE-BUNDLE-OP on it produces an output file, otherwise returns
 NIL."
   (not (or (require-system-p system)
-           (null (asdf:output-files 'asdf:compile-bundle-op system)))))
+           (and (not (prebuilt-system-p system))
+                (null (asdf:output-files 'asdf:compile-bundle-op system)))
+           (and (prebuilt-system-p system)
+                (notany #'compiled-file-p (asdf/component:sub-components system))))))

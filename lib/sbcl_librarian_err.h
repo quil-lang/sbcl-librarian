@@ -73,11 +73,13 @@ extern __thread LIBSBCL_LIBRARIAN_ERR_API jmp_buf fatal_lisp_error_handler;
 #endif
 
 extern int LIBSBCL_LIBRARIAN_ERR_API fatal_sbcl_error_occurred;
+extern int LIBSBCL_LIBRARIAN_ERR_API initialized;
 extern void ldb_monitor(void);
 
 typedef enum {
     LISP_ERR_SUCCESS = 0,
     LISP_ERR_FAILURE = 1,
     LISP_ERR_BUG = 2,
-    LISP_ERR_FATAL = 3
+    LISP_ERR_FATAL = 3,
+    LISP_ERR_NOT_INITIALIZED = 4
 } lisp_err_t;

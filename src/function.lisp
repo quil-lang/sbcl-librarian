@@ -85,7 +85,9 @@ if (!setjmp(fatal_lisp_error_handler)) {
         (format nil "~a {~%~a~%}~%"
                 header
                 (format nil "    if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler~a)) {
+        void *sigint_handler = signal(SIGINT, 0);
         ~a
+        signal(SIGINT, sigint_handler);
     } else {
         ~a
     }"

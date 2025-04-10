@@ -78,7 +78,7 @@
           (c-function-declaration name ':int '((core :string))
                                   :datap nil
                                   :linkage linkage))
-  (format stream "  static int initialized = 0;~%")
+  (format stream "  int initialized = 0;~%")
   (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\", ~{\"~a\"~^, ~}};~%"
           initialize-lisp-args)
   (format stream "  if (initialized) return 1;~%")

@@ -28,6 +28,10 @@ class LispFatal(Exception):
     pass
 
 
+class LispNotInitialized(Exception):
+    pass
+
+
 LispHandle = ctypes.c_void_p
 
 
@@ -111,6 +115,10 @@ def lift_fn(name: str, fn: Callable[..., Any]) -> Callable[..., Any]:
             if result == 3:
                 raise LispFatal(
                     "SBCL crashed with a fatal, non-recoverable error. All subsequent calls into Lisp will raise the same exception."
+                )
+            elif result == 4:
+                raise LispNotInitialized(
+                    "The SBCL runtime must be initialized before calling into Lisp."
                 )
             msg = ctypes.c_char_p()
             sbcl_librarian.raw.get_error_message(ctypes.byref(msg))

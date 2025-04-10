@@ -119,7 +119,8 @@
                             :if-exists :supersede)
       (format stream "#define ~A~%~%" build-flag)
       (format stream "#include ~s~%~%" header-name)
-      (format stream "#include <signal.h>~%~%")
+      (format stream "#include <signal.h>~%")
+      (format stream "#ifndef _WIN32~%#include <pthread.h>~%#endif~%~%")
       (dolist (api (library-apis library))
         (write-api-to-source api linkage stream))
       (unless omit-init-function

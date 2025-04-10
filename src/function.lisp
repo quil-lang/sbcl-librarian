@@ -85,7 +85,24 @@ if (!setjmp(fatal_lisp_error_handler)) {
         (format nil "~a {~%~a~%}~%"
                 header
                 (format nil "    if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler~a)) {
+        void *sigint_handler = signal(SIGINT, 0);
+#ifdef __linux__
+        sigset_t mask1;
+        sigemptyset(&mask1);
+        sigaddset(&mask1, SIGSEGV);
+        sigaddset(&mask1, SIGTRAP);
+
+        pthread_sigmask(SIG_UNBLOCK, &mask1, 0);
+#endif
         ~a
+#ifdef __APPLE__
+        sigset_t mask2;
+        sigemptyset(&mask2);
+        sigaddset(&mask2, SIGINT);
+
+        pthread_sigmask(SIG_UNBLOCK, &mask2, 0);
+#endif
+        signal(SIGINT, sigint_handler);
     } else {
         ~a
     }"

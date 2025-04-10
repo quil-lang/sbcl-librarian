@@ -84,7 +84,9 @@ if (!setjmp(fatal_lisp_error_handler)) {
                                           (list "result"))))))
         (format nil "~a {~%~a~%}~%"
                 header
-                (format nil "    if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler~a)) {
+                (format nil "    if (!initialized) {
+        return LISP_ERR_NOT_INITIALIZED;
+    } else if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler~a)) {
         ~a
     } else {
         ~a

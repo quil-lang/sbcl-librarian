@@ -31,6 +31,7 @@ extern void set_lossage_handler(void (*handler)(void));
 extern int initialize_lisp(int argc, const char *argv[], char *envp[]);
 
 int fatal_sbcl_error_occurred = 0;
+int initialized = 0;
 
 static void return_from_lisp(void)
 {
@@ -89,5 +90,6 @@ static void init(void)
 
     dladdr(do_initialize_lisp, &info);
     do_initialize_lisp(info.dli_fname);
+    initialized = 1;
 }
 #endif

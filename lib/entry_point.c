@@ -31,6 +31,7 @@ extern void set_lossage_handler(void (*handler)(void));
 extern int initialize_lisp(int argc, const char *argv[], char *envp[]);
 
 int fatal_sbcl_error_occurred = 0;
+int initialized = 0;
 
 static void return_from_lisp(void)
 {
@@ -66,6 +67,7 @@ static void do_initialize_lisp(const char *libsbcl_librarian_path)
     dlopen(libsbcl_librarian_path, RTLD_NOW | RTLD_GLOBAL);
 #endif
     initialize_lisp(sizeof(init_args) / sizeof(init_args[0]), init_args, NULL);
+    initialized = 1;
     set_lossage_handler(return_from_lisp);
 }
 

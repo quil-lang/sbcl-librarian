@@ -73,40 +73,11 @@ class LispObject:
         raise pickle.PicklingError("Unable to pickle Lisp object.")
 
 
-SIGINT = int(signal.SIGINT)
-SIG_UNBLOCK = int(signal.SIG_UNBLOCK) if platform.system() != "Windows" else None
-MASK_1 = [int(signal.SIGSEGV), int(signal.SIGTRAP)] if platform.system() != "Windows" else None
-MASK_2 = [int(signal.SIGINT)] if platform.system() != "Windows" else None
-
-
 def lift_fn(name: str, fn: Callable[..., Any]) -> Callable[..., Any]:
-    macos = platform.system() == "Darwin"
-    linux = platform.system() == "Linux"
-
     def safe_call(args: Any, kwargs: Any) -> Any:
-        handler = _signal.getsignal(  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-            SIGINT
-        )
         args = tuple(a.handle if isinstance(a, LispObject) else a for a in args)
-        retval = None
         logger.debug("%s%s", name, args)
-        try:
-            # The SBCL runtime uses some signals on Linux:
-            # https://github.com/sbcl/sbcl/blob/master/src/runtime/interrupt.c#L27-L39
-            if linux:
-                _signal.pthread_sigmask(  # pyright: ignore[reportUnknownMemberType]
-                    SIG_UNBLOCK, MASK_1
-                )
-            retval = fn(*args, **kwargs)
-        finally:
-            _signal.signal(SIGINT, handler)  # pyright: ignore[reportUnknownMemberType]
-            # SBCL runtime may have blocked SIGINT, so unblock
-            if macos:
-                _signal.pthread_sigmask(  # pyright: ignore[reportUnknownMemberType]
-                    SIG_UNBLOCK, MASK_2
-                )
-
-        return retval
+        return fn(*args, **kwargs)
 
     @functools.wraps(fn)
     def with_exceptions(*args: Any, **kwargs: Any) -> Any:

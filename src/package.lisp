@@ -1,4 +1,5 @@
 ;;;; package.lisp
+#-win32
 (require "sb-sprof")
 
 (defpackage #:sbcl-librarian

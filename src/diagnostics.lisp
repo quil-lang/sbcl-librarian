@@ -31,10 +31,16 @@
   (values))
 
 (defun start-profiling (args)
-  (apply #'sb-sprof:start-profiling (read-from-string args)))
+  #-win32
+  (apply #'sb-sprof:start-profiling (read-from-string args))
+  #+win32
+  (format t "SB-SPROF is not supported on Windows."))
 
 (defun profiler-report (args)
-  (apply #'sb-sprof:report (read-from-string args)))
+  #-win32
+  (apply #'sb-sprof:report (read-from-string args))
+  #+win32
+  (format t "SB-SPROF is not supported on Windows."))
 
 (define-api diagnostics (:function-prefix "")
   (:function

@@ -19,8 +19,6 @@ intptr_t *fatal_lisp_error_handler(void) {
     return _fatal_lisp_error_handler;
 }
 
-DWORD lisp_calling_context_tls_index;
-
 __thread struct unwind_context lisp_calling_context;
 #else
 # include <dlfcn.h>

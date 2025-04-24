@@ -50,7 +50,9 @@
                                              :function-prefix (api-function-prefix api)
                                              :error-map (api-error-map api))))))))))
 
-(defun write-api-to-source (api linkage stream)
+(defun write-api-to-source (api linkage stream thunk-stream)
+  #-win32
+  (declare (ignore thunk-stream))
   (dolist (spec (api-specs api))
     (destructuring-bind (kind &rest things) spec
       (ecase kind
@@ -65,11 +67,14 @@
                                              :externp nil
                                              :linkage linkage
                                              :function-prefix (api-function-prefix api)
-                                             :c-prefix "_"
+                                             :c-prefix "_unwind_thunk"
                                              :error-map (api-error-map api))
                      (c-function-definition name result-type typed-lambda-list
                                             :function-prefix (api-function-prefix api)
-                                            :error-map (api-error-map api))))))))))
+                                            :error-map (api-error-map api)))
+             #+win32
+             (format stream "~A~%"
+                     (unwind-thunk-definition name)))))))))
 
 (defun write-init-function (name linkage stream &optional (initialize-lisp-args nil))
   (terpri stream)
@@ -92,6 +97,7 @@
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
+         (thunks-name (concatenate 'string c-name "_thunks.S"))
          (linkage (library-function-linkage library))
          (build-flag (and linkage
                           (concatenate 'string linkage "_BUILD"))))
@@ -117,11 +123,14 @@
     (with-open-file (stream (merge-pathnames source-name directory)
                             :direction :output
                             :if-exists :supersede)
-      (format stream "#define ~A~%~%" build-flag)
-      (format stream "#include ~s~%~%" header-name)
-      (format stream "#include <signal.h>~%")
-      (format stream "#ifndef _WIN32~%#include <pthread.h>~%#endif~%~%")
-      (dolist (api (library-apis library))
-        (write-api-to-source api linkage stream))
-      (unless omit-init-function
-        (write-init-function 'init linkage stream initialize-lisp-args)))))
+      (with-open-file (thunk-stream (merge-pathnames thunks-name directory)
+                                    :direction-output
+                                    :if-exists :supersede)
+        (format stream "#define ~A~%~%" build-flag)
+        (format stream "#include ~s~%~%" header-name)
+        (format stream "#include <signal.h>~%")
+        (format stream "#ifndef _WIN32~%#include <pthread.h>~%#endif~%~%")
+        (dolist (api (library-apis library))
+          (write-api-to-source api linkage stream thunk-stream))
+        (unless omit-init-function
+          (write-init-function 'init linkage stream initialize-lisp-args))))))

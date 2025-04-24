@@ -73,9 +73,9 @@ if (!setjmp(fatal_lisp_error_handler)) {
         (canonical-signature name result-type typed-lambda-list
                              :function-prefix function-prefix
                              :error-map error-map)
-      (declare (ignore return-type))
-      (let ((call-statement (format nil "return ~a(~{~a~^, ~});"
-                                    (concatenate 'string "_" (coerce-to-c-name callable-name))
+      (let ((call-statement (format nil "~a result = ~a(~{~a~^, ~});"
+                                    return-type
+                                    (concatenate 'string #-win32 "_" #+win32 "_unwind_thunk" (coerce-to-c-name callable-name))
                                     (append
                                      (mapcar (lambda (item)
                                                (lisp-to-c-name (first item)))
@@ -105,6 +105,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
         pthread_sigmask(SIG_UNBLOCK, &mask2, 0);
 #endif
         signal(SIGINT, sigint_handler);
+        return result;
     } else {
         ~a
     }"
@@ -116,6 +117,10 @@ if (!setjmp(fatal_lisp_error_handler)) {
                         (if (and error-map (error-map-fatal-code error-map))
                             (format nil "return ~d;" (error-map-fatal-code error-map))
                             (format nil "ldb_monitor();"))))))))
+
+#+win32
+(defun unwind-thunk-definition (name)
+  "")
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

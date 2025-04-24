@@ -143,7 +143,7 @@ _unwind_thunk_~a:
 
 ~{    pop ~a~^~%~}
 
-    mov rax, [_~a]
+    mov rax, QWORD PTR [rip + _~a]
     call rax"
               c-name c-name c-name arg-regs arg-regs c-name))))
 

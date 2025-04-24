@@ -118,9 +118,37 @@ if (!setjmp(fatal_lisp_error_handler)) {
                             (format nil "return ~d;" (error-map-fatal-code error-map))
                             (format nil "ldb_monitor();"))))))))
 
-#+win32
-(defun unwind-thunk-definition (name)
-  "")
+(defparameter *win32-argument-registers*
+  '("rcx" "rdx" "r8" "r9"))
+
+(defun unwind-thunk-definition (name num-args)
+  (let ((c-name (lisp-to-c-name name))
+        (arg-regs (subseq *win32-argument-registers* 0 num-args)))
+    (with-output-to-string (s)
+      (format s "    .intel_syntax noprefix
+    .text
+    .extern lisp_calling_convention_tls_index
+    .extern TlsGetValue
+    .extern _~a
+
+    .globl _unwind_thunk_~a
+_unwind_thunk_~a:
+    mov r10, [rsp]
+    lea r11, [rsp + 8]
+
+~{    push ~a~^~%~}
+
+    mov ecx, DWORD PTR lisp_calling_context_tls_index[rip]
+    call TlsGetValue
+
+    mov [rax], r10
+    mov [rax + 8], r11
+    mov [rax + 16], rbp
+
+~{    pop ~a~^~%~}
+
+    jmp _~a"
+              c-name c-name c-name arg-regs arg-regs c-name))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

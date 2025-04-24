@@ -69,6 +69,13 @@
                                              :function-prefix (api-function-prefix api)
                                              :c-prefix "_unwind_thunk"
                                              :error-map (api-error-map api))
+                     (c-function-declaration name result-type typed-lambda-list
+                                             :datap t
+                                             :externp nil
+                                             :linkage linkage
+                                             :function-prefix (api-function-prefix api)
+                                             :c-prefix "_"
+                                             :error-map (api-error-map api))
                      (c-function-definition name result-type typed-lambda-list
                                             :function-prefix (api-function-prefix api)
                                             :error-map (api-error-map api)))

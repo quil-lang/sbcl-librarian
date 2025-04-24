@@ -137,8 +137,9 @@ directory, building the shared library, and installing the shared
 library and its header file."
   (let* ((c-name (library-c-name library))
          (bindings-filename (concatenate 'string c-name ".c"))
+         (thunks-filename (concatenate 'string c-name "_thunks.S"))
          (loadable-systems (remove-if-not #'system-loadable-from-fasl-p systems))
-         (source-filenames (append (list bindings-filename *incbin-filename* *fasl-loader-filename*)
+         (source-filenames (append (list bindings-filename thunks-filename *incbin-filename* *fasl-loader-filename*)
                                    (mapcar #'system-fasl-bundle-filename loadable-systems))))
     (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output :if-exists :supersede)
       (format stream "cmake_minimum_required(VERSION ~A)~%" *cmake-minimum-required*)

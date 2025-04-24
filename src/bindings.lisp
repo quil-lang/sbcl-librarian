@@ -124,7 +124,7 @@
                             :direction :output
                             :if-exists :supersede)
       (with-open-file (thunk-stream (merge-pathnames thunks-name directory)
-                                    :direction-output
+                                    :direction :output
                                     :if-exists :supersede)
         (format stream "#define ~A~%~%" build-flag)
         (format stream "#include ~s~%~%" header-name)

@@ -22,7 +22,7 @@
 (define-api unwind-context (:function-prefix "")
   (:literal "#include <Windows.h>")
   (:literal "struct unwind_context { DWORD Rip, Rsp, Rbp; };")
-  (:literal "DWORD lisp_calling_context_tls_index;"))
+  (:literal "extern DWORD lisp_calling_context_tls_index;"))
 
 (define-aggregate-library sbcl-librarian (:function-linkage "LIBSBCL_LIBRARIAN_API")
   diagnostics

@@ -123,13 +123,17 @@
     (with-open-file (stream (merge-pathnames source-name directory)
                             :direction :output
                             :if-exists :supersede)
+      (format stream "#define ~A~%~%" build-flag)
+      (format stream "#include ~s~%~%" header-name)
+      (format stream "#include <signal.h>~%")
+      (format stream "#ifndef _WIN32~%#include <pthread.h>~%#endif~%~%")
       (with-open-file (thunk-stream (merge-pathnames thunks-name directory)
                                     :direction :output
                                     :if-exists :supersede)
-        (format stream "#define ~A~%~%" build-flag)
-        (format stream "#include ~s~%~%" header-name)
-        (format stream "#include <signal.h>~%")
-        (format stream "#ifndef _WIN32~%#include <pthread.h>~%#endif~%~%")
+        (format thunk-stream ".intel_syntax noprefix~%")
+        (format thunk-stream ".text~%~%")
+        (format thunk-stream ".extern lisp_calling_context_tls_index~%")
+        (format thunk-stream ".extern TlsGetValue~%~%")
         (dolist (api (library-apis library))
           (write-api-to-source api linkage stream thunk-stream))
         (unless omit-init-function

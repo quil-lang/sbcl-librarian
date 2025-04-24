@@ -125,11 +125,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
   (let ((c-name (lisp-to-c-name name))
         (arg-regs (subseq *win32-argument-registers* 0 num-args)))
     (with-output-to-string (s)
-      (format s "    .intel_syntax noprefix
-    .text
-    .extern lisp_calling_convention_tls_index
-    .extern TlsGetValue
-    .extern _~a
+      (format s ".extern _~a
 
     .globl _unwind_thunk_~a
 _unwind_thunk_~a:

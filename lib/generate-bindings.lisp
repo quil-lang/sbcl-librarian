@@ -19,12 +19,17 @@
 
 (in-package #:sbcl-librarian/lib)
 
+(define-api unwind-context (:function-prefix "")
+  (:literal "struct unwind_context { DWORD Rip, Rsp, Rbp; };"))
+
 (define-aggregate-library sbcl-librarian (:function-linkage "LIBSBCL_LIBRARIAN_API")
   diagnostics
   environment
   errors
   handles
-  loader)
+  loader
+  #+win32
+  unwind-context)
 
 ;;; BEGIN HACKS
 

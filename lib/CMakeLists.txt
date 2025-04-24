@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(libsbcl_librarian C)
+project(libsbcl_librarian C ASM)
 
 include(GNUInstallDirs)
 

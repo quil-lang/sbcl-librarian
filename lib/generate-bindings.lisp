@@ -20,6 +20,7 @@
 (in-package #:sbcl-librarian/lib)
 
 (define-api unwind-context (:function-prefix "")
+  (:literal "#include <Windows.h>")
   (:literal "struct unwind_context { DWORD Rip, Rsp, Rbp; };"))
 
 (define-aggregate-library sbcl-librarian (:function-linkage "LIBSBCL_LIBRARIAN_API")

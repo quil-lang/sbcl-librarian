@@ -73,7 +73,7 @@
                                             :function-prefix (api-function-prefix api)
                                             :error-map (api-error-map api)))
              #+win32
-             (format stream "~A~%"
+             (format thunk-stream "~A~%"
                      (unwind-thunk-definition name (length typed-lambda-list))))))))))
 
 (defun write-init-function (name linkage stream &optional (initialize-lisp-args nil))

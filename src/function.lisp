@@ -143,7 +143,8 @@ _unwind_thunk_~a:
 
 ~{    pop ~a~^~%~}
 
-    jmp _~a"
+    mov rax, [_~a]
+    call rax"
               c-name c-name c-name arg-regs arg-regs c-name))))
 
 (defun callable-definition (name result-type typed-lambda-list &key

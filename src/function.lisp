@@ -122,7 +122,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
   '("rcx" "rdx" "r8" "r9"))
 
 (defun unwind-thunk-definition (name num-args)
-  (let ((c-name (lisp-to-c-name name))
+  (let ((c-name (coerce-to-c-name name))
         (arg-regs (subseq *win32-argument-registers* 0 num-args)))
     (with-output-to-string (s)
       (format s ".extern _~a

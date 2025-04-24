@@ -61,7 +61,7 @@
         (:function
          (dolist (spec things)
            (destructuring-bind (name result-type typed-lambda-list) spec
-             (format stream "~A;~%~A~%"
+             (format stream "~A;~%~A;~%~A~%"
                      (c-function-declaration name result-type typed-lambda-list
                                              :datap t
                                              :externp nil

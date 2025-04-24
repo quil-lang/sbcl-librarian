@@ -137,10 +137,12 @@
       (with-open-file (thunk-stream (merge-pathnames thunks-name directory)
                                     :direction :output
                                     :if-exists :supersede)
-        (format thunk-stream ".intel_syntax noprefix~%")
-        (format thunk-stream ".text~%~%")
-        (format thunk-stream ".extern lisp_calling_context_tls_index~%")
-        (format thunk-stream ".extern TlsGetValue~%~%")
+        #+win32
+        (progn
+          (format thunk-stream ".intel_syntax noprefix~%")
+          (format thunk-stream ".text~%~%")
+          (format thunk-stream ".extern lisp_calling_context_tls_index~%")
+          (format thunk-stream ".extern TlsGetValue~%~%"))
         (dolist (api (library-apis library))
           (write-api-to-source api linkage stream thunk-stream))
         (unless omit-init-function

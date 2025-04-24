@@ -73,7 +73,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
         (canonical-signature name result-type typed-lambda-list
                              :function-prefix function-prefix
                              :error-map error-map)
-      (let ((call-statement (format nil "~a result = ~a(~{~a~^, ~});"
+      (let ((call-statement (format nil "~a err_code = ~a(~{~a~^, ~});"
                                     (c-type return-type)
                                     (concatenate 'string #-win32 "_" #+win32 "_unwind_thunk" (coerce-to-c-name callable-name))
                                     (append
@@ -105,7 +105,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
         pthread_sigmask(SIG_UNBLOCK, &mask2, 0);
 #endif
         signal(SIGINT, sigint_handler);
-        return result;
+        return err_code;
     } else {
         ~a
     }"

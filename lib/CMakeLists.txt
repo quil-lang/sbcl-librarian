@@ -6,7 +6,7 @@ include(GNUInstallDirs)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_library(sbcl_librarian SHARED sbcl_librarian.c sbcl_librarian.h sbcl_librarian_err.h entry_point.c)
+add_library(sbcl_librarian SHARED sbcl_librarian.c sbcl_librarian_thunks.S sbcl_librarian.h sbcl_librarian_err.h entry_point.c)
 if(WIN32)
 # DLLs go to the bin/ directory on Windows
 target_link_directories(sbcl_librarian PRIVATE $ENV{BUILD_PREFIX}/Library/bin)
@@ -28,7 +28,7 @@ endif()
 
 # Generate the core file and C bindings
 add_custom_command(
-  OUTPUT sbcl_librarian.c sbcl_librarian.h
+  OUTPUT sbcl_librarian.c sbcl_librarian.h sbcl_librarian_thunks.S
   COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/..// ${SBCL} --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )

@@ -81,7 +81,9 @@
                                             :error-map (api-error-map api)))
              #+win32
              (format thunk-stream "~A~%"
-                     (unwind-thunk-definition name (length typed-lambda-list))))))))))
+                     (unwind-thunk-definition
+                      (callable-name-with-c-prefix name (api-function-prefix api))
+                      (length typed-lambda-list))))))))))
 
 (defun write-init-function (name linkage stream &optional (initialize-lisp-args nil))
   (terpri stream)

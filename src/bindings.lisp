@@ -50,7 +50,9 @@
                                              :function-prefix (api-function-prefix api)
                                              :error-map (api-error-map api))))))))))
 
-(defun write-api-to-source (api linkage stream)
+(defun write-api-to-source (api linkage stream thunk-stream)
+  #-win32
+  (declare (ignore thunk-stream))
   (dolist (spec (api-specs api))
     (destructuring-bind (kind &rest things) spec
       (ecase kind
@@ -59,7 +61,14 @@
         (:function
          (dolist (spec things)
            (destructuring-bind (name result-type typed-lambda-list) spec
-             (format stream "~A;~%~A~%"
+             (format stream "~A;~%~A;~%~A~%"
+                     (c-function-declaration name result-type typed-lambda-list
+                                             :datap nil
+                                             :externp t
+                                             :linkage linkage
+                                             :function-prefix (api-function-prefix api)
+                                             :c-prefix "_unwind_thunk_"
+                                             :error-map (api-error-map api))
                      (c-function-declaration name result-type typed-lambda-list
                                              :datap t
                                              :externp nil
@@ -69,7 +78,12 @@
                                              :error-map (api-error-map api))
                      (c-function-definition name result-type typed-lambda-list
                                             :function-prefix (api-function-prefix api)
-                                            :error-map (api-error-map api))))))))))
+                                            :error-map (api-error-map api)))
+             #+win32
+             (format thunk-stream "~A~%"
+                     (unwind-thunk-definition
+                      (callable-name-with-c-prefix name (api-function-prefix api))
+                      (length typed-lambda-list))))))))))
 
 (defun write-init-function (name linkage stream &optional (initialize-lisp-args nil))
   (terpri stream)
@@ -92,6 +106,7 @@
   (let* ((c-name (library-c-name library))
          (header-name (concatenate 'string c-name ".h"))
          (source-name (concatenate 'string c-name ".c"))
+         (thunks-name (concatenate 'string c-name "_thunks.S"))
          (linkage (library-function-linkage library))
          (build-flag (and linkage
                           (concatenate 'string linkage "_BUILD"))))
@@ -121,7 +136,16 @@
       (format stream "#include ~s~%~%" header-name)
       (format stream "#include <signal.h>~%")
       (format stream "#ifndef _WIN32~%#include <pthread.h>~%#endif~%~%")
-      (dolist (api (library-apis library))
-        (write-api-to-source api linkage stream))
-      (unless omit-init-function
-        (write-init-function 'init linkage stream initialize-lisp-args)))))
+      (with-open-file (thunk-stream (merge-pathnames thunks-name directory)
+                                    :direction :output
+                                    :if-exists :supersede)
+        #+win32
+        (progn
+          (format thunk-stream ".intel_syntax noprefix~%")
+          (format thunk-stream ".text~%~%")
+          (format thunk-stream ".extern lisp_calling_context_tls_index~%")
+          (format thunk-stream ".extern TlsGetValue~%~%"))
+        (dolist (api (library-apis library))
+          (write-api-to-source api linkage stream thunk-stream))
+        (unless omit-init-function
+          (write-init-function 'init linkage stream initialize-lisp-args))))))

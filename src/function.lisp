@@ -73,9 +73,9 @@ if (!setjmp(fatal_lisp_error_handler)) {
         (canonical-signature name result-type typed-lambda-list
                              :function-prefix function-prefix
                              :error-map error-map)
-      (declare (ignore return-type))
-      (let ((call-statement (format nil "return ~a(~{~a~^, ~});"
-                                    (concatenate 'string "_" (coerce-to-c-name callable-name))
+      (let ((call-statement (format nil "~a err_code = ~a(~{~a~^, ~});"
+                                    (c-type return-type)
+                                    (concatenate 'string #-win32 "_" #+win32 "_unwind_thunk_" (coerce-to-c-name callable-name))
                                     (append
                                      (mapcar (lambda (item)
                                                (lisp-to-c-name (first item)))
@@ -105,6 +105,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
         pthread_sigmask(SIG_UNBLOCK, &mask2, 0);
 #endif
         signal(SIGINT, sigint_handler);
+        return err_code;
     } else {
         ~a
     }"
@@ -116,6 +117,31 @@ if (!setjmp(fatal_lisp_error_handler)) {
                         (if (and error-map (error-map-fatal-code error-map))
                             (format nil "return ~d;" (error-map-fatal-code error-map))
                             (format nil "ldb_monitor();"))))))))
+
+(defparameter *win32-argument-registers*
+  '("rcx" "rdx" "r8" "r9"))
+
+(defun unwind-thunk-definition (name num-args)
+  (let ((c-name (coerce-to-c-name name))
+        (arg-regs (subseq *win32-argument-registers* 0 num-args)))
+    (with-output-to-string (s)
+      (format s ".extern _~a
+
+    .globl _unwind_thunk_~a
+_unwind_thunk_~a:
+    mov r10, [rsp]
+    lea r11, [rsp + 8]
+~@[~%~{    push ~a~^~%~}~%~]
+    mov ecx, DWORD PTR [rip + lisp_calling_context_tls_index]
+    call TlsGetValue
+
+    mov [rax], r10
+    mov [rax + 8], r11
+    mov [rax + 16], rbp
+~@[~%~{    pop ~a~^~%~}~%~]
+    mov rax, QWORD PTR [rip + _~a]
+    jmp rax
+" c-name c-name c-name arg-regs arg-regs c-name))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

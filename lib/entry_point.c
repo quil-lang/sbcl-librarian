@@ -18,6 +18,9 @@ __thread intptr_t _fatal_lisp_error_handler[5];
 intptr_t *fatal_lisp_error_handler(void) {
     return _fatal_lisp_error_handler;
 }
+
+int lisp_calling_context_tls_index;
+__thread struct unwind_context lisp_calling_context;
 #else
 # include <dlfcn.h>
 
@@ -79,6 +82,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
         GetModuleFileNameA(hinstDLL, libsbcl_librarian_path, BUF_SIZE);
         do_initialize_lisp(libsbcl_librarian_path);
+        lisp_calling_context_tls_index = TlsAlloc();
+        TlsSetValue(lisp_calling_context_tls_index, &lisp_calling_context);
+    } else if (fdwReason == DLL_THREAD_ATTACH) {
+        TlsSetValue(lisp_calling_context_tls_index, &lisp_calling_context);
     }
 
     return TRUE;

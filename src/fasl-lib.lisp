@@ -143,7 +143,7 @@ library and its header file."
                                    (mapcar #'system-fasl-bundle-filename loadable-systems))))
     (with-open-file (stream (uiop:merge-pathnames* "CMakeLists.txt" directory) :direction :output :if-exists :supersede)
       (format stream "cmake_minimum_required(VERSION ~A)~%" *cmake-minimum-required*)
-      (format stream "project(~A)~%" c-name)
+      (format stream "project(~A C ASM)~%" c-name)
       (loop :for system :in loadable-systems
             :for fasl-filename := (system-fasl-bundle-filename system)
             :do (format stream "configure_file(${CMAKE_CURRENT_SOURCE_DIR}/~A ${CMAKE_CURRENT_BINARY_DIR}/~A COPYONLY)~%"

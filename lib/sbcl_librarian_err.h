@@ -74,6 +74,9 @@ extern __thread LIBSBCL_LIBRARIAN_ERR_API jmp_buf fatal_lisp_error_handler;
 
 extern int LIBSBCL_LIBRARIAN_ERR_API fatal_sbcl_error_occurred;
 extern int LIBSBCL_LIBRARIAN_ERR_API initialized;
+#ifdef _WIN32
+extern int LIBSBCL_LIBRARIAN_ERR_API lisp_calling_context_tls_index;
+#endif
 extern void ldb_monitor(void);
 
 typedef enum {

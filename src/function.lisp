@@ -75,7 +75,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
                              :error-map error-map)
       (let ((call-statement (format nil "~a err_code = ~a(~{~a~^, ~});"
                                     (c-type return-type)
-                                    (concatenate 'string #-win32 "_" #+win32 "_unwind_thunk" (coerce-to-c-name callable-name))
+                                    (concatenate 'string #-win32 "_" #+win32 "_unwind_thunk_" (coerce-to-c-name callable-name))
                                     (append
                                      (mapcar (lambda (item)
                                                (lisp-to-c-name (first item)))

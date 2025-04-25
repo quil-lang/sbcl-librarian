@@ -63,11 +63,11 @@
            (destructuring-bind (name result-type typed-lambda-list) spec
              (format stream "~A;~%~A;~%~A~%"
                      (c-function-declaration name result-type typed-lambda-list
-                                             :datap t
-                                             :externp nil
+                                             :datap nil
+                                             :externp t
                                              :linkage linkage
                                              :function-prefix (api-function-prefix api)
-                                             :c-prefix "_unwind_thunk"
+                                             :c-prefix "_unwind_thunk_"
                                              :error-map (api-error-map api))
                      (c-function-declaration name result-type typed-lambda-list
                                              :datap t

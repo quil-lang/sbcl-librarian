@@ -131,18 +131,14 @@ if (!setjmp(fatal_lisp_error_handler)) {
 _unwind_thunk_~a:
     mov r10, [rsp]
     lea r11, [rsp + 8]
-
-~{    push ~a~^~%~}
-
+~@[~%~{    push ~a~^~%~}~%~]
     mov ecx, DWORD PTR lisp_calling_context_tls_index[rip]
     call TlsGetValue
 
     mov [rax], r10
     mov [rax + 8], r11
     mov [rax + 16], rbp
-
-~{    pop ~a~^~%~}
-
+~@[~%~{    pop ~a~^~%~}~%~]
     mov rax, QWORD PTR [rip + _~a]
     call rax"
               c-name c-name c-name arg-regs arg-regs c-name))))

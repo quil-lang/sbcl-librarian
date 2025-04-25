@@ -132,7 +132,7 @@ _unwind_thunk_~a:
     mov r10, [rsp]
     lea r11, [rsp + 8]
 ~@[~%~{    push ~a~^~%~}~%~]
-    mov ecx, DWORD PTR lisp_calling_context_tls_index[rip]
+    mov ecx, DWORD PTR [rip + lisp_calling_context_tls_index]
     call TlsGetValue
 
     mov [rax], r10
@@ -140,8 +140,8 @@ _unwind_thunk_~a:
     mov [rax + 16], rbp
 ~@[~%~{    pop ~a~^~%~}~%~]
     mov rax, QWORD PTR [rip + _~a]
-    call rax"
-              c-name c-name c-name arg-regs arg-regs c-name))))
+    jmp rax
+" c-name c-name c-name arg-regs arg-regs c-name))))
 
 (defun callable-definition (name result-type typed-lambda-list &key
                                                                  (function-prefix "")

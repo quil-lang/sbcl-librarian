@@ -46,22 +46,29 @@ initialized to OUTPUT-TRANSLATIONS."
   "Compile TARGET-SYSTEM and all of its required systems into a single
 FASL bundle file per system, placing the FASL bundle files in
 DIRECTORY."
-  (let ((dependency-systems (system-dependencies-in-load-order target-system)))
+  (let* ((dependency-systems (system-dependencies-in-load-order target-system))
+         (prebuilt-systems (mapcan (lambda (system)
+                                     (if (uiop:file-exists-p (system-fasl-bundle-location system))
+                                         (list system)
+                                         (mapcar #'asdf:find-system (asdf:system-depends-on system))))
+                                   (remove-if-not #'prebuilt-system-p dependency-systems))))
     (with-output-translations
         `(:output-translations
           :inherit-configuration
-          (t ,directory))
+          ,@(loop :for system :in (cons target-system dependency-systems)
+                  :for fasl-filename := (system-fasl-bundle-filename system)
+                  :when (and (system-loadable-from-fasl-p system)
+                             (not (prebuilt-system-p system)))
+                    :collect `((,(asdf:system-source-directory system) :**/ ,fasl-filename)
+                               (:function (lambda (pathname dir-desig)
+                                            (declare (ignore pathname dir-desig))
+                                            (uiop:merge-pathnames* ,fasl-filename ,directory))))))
       (with-recursive-compile-bundle-op
-        (asdf:oos 'asdf:compile-bundle-op target-system))
-      (let ((prebuilt-systems (mapcan (lambda (system)
-                                        (if (uiop:file-exists-p (system-fasl-bundle-location system))
-                                            (list system)
-                                            (mapcar #'asdf:find-system (asdf:system-depends-on system))))
-                                      (remove-if-not #'prebuilt-system-p dependency-systems))))
-        (dolist (system prebuilt-systems)
-          (let ((dest-file (uiop:merge-pathnames* (system-fasl-bundle-filename system) directory)))
-            (ensure-directories-exist dest-file)
-            (uiop:copy-file (system-fasl-bundle-location system) dest-file)))))))
+        (asdf:oos 'asdf:compile-bundle-op target-system)))
+    (dolist (system prebuilt-systems)
+      (let ((dest-file (uiop:merge-pathnames* (system-fasl-bundle-filename system) directory)))
+        (ensure-directories-exist dest-file)
+        (uiop:copy-file (system-fasl-bundle-location system) dest-file)))))
 
 (defun system-dependencies-in-load-order (system)
   "Return a list of all the required systems for SYSTEM topologically

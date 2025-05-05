@@ -87,7 +87,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
                 (format nil "    if (!initialized) {
         return LISP_ERR_NOT_INITIALIZED;
     } else if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler~a)) {
-        void *sigint_handler = signal(SIGINT, 0);
+        void (*sigint_handler)(int) = signal(SIGINT, SIG_DFL);
 #ifdef __linux__
         sigset_t mask1;
         sigemptyset(&mask1);

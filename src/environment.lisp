@@ -37,9 +37,16 @@ passing no arguments and throwing away the return value."
     (funcall (symbol-function symbol)))
   (values))
 
+(defun eval-string (expr)
+  "Evaluates the expression contained in EXPR for its side-effects,
+throwing away its result."
+  (eval (read-from-string expr))
+  (values))
+
 (define-api environment (:function-prefix "")
   (:function
    (("lisp_enable_debugger" enable-debugger) :void ())
    (("lisp_disable_debugger" disable-debugger) :void ())
    (("lisp_gc" gc) :void ())
-   (("lisp_funcall0_by_name" funcall0-by-name) :void ((name :string) (package-name :string)))))
+   (("lisp_funcall0_by_name" funcall0-by-name) :void ((name :string) (package-name :string)))
+   (("lisp_eval_string" eval-string) :void ((expr :string)))))

@@ -70,6 +70,6 @@ jobs:
         popd
         popd
         gcc -Wall -o example example.c -lcalc -lsbcl_librarian
-        echo "(+ 1 2)" | ./example | tr -d '\n' | grep "> 3> "
+        echo "(+ 1 2)" | ./example | tr -d '\n' | grep "hello from preload> 3> "
         echo "(+ 1 2)" | python ./example.py | tr -d '\n' | grep "> 3> "
         python ./exhaust_heap.py | grep "returned to Python after heap exhaustion (attempt 1)"

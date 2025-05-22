@@ -92,5 +92,6 @@ jobs:
         popd
         D:\a\_temp\setup-msys2\msys2.CMD -c "gcc -Wall -o example example.c -lcalc -lsbcl_librarian"
         if ((echo '(+ 1 2)' | .\example.exe) -match "3") { exit 0 } else { exit 1 }
+        if ((echo '(+ 1 2)' | .\example.exe) -match "hello from preload") { exit 0 } else { exit 1 }
         if ((echo '(+ 1 2)' | python example.py) -match "3") { exit 0 } else { exit 1 }
         if ((python exhaust_heap.py) -match "attempt 1") { exit 0 } else { exit 1 }

@@ -16,7 +16,8 @@ shared library constructor that loads the embedded FASLs.")
   "The name of the shared library (minus the file suffix and 'lib' prefix) containing the
 SBCL runtime.")
 
-(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name *base-library-name*))
+(defun create-fasl-library-cmake-project (system-name library directory &key (base-library-name *base-library-name*)
+                                                                          preload-eval-expr)
   "Generate a CMake project in DIRECTORY for a shared library that, when
 loaded into a process that has already initialized the SBCL runtime,
 adds the C symbols for LIBRARY to the current process's symbol table
@@ -28,7 +29,10 @@ for the API of LIBRARY, an embedded FASL bundle file per every ASDF
 system required by SYSTEM-NAME (including itself), and a shared
 library constructor function that loads the embedded FASL bundle files
 into the current image, using functions exported by BASE-LIBRARY-NAME,
-skipping those for already-loaded systems."
+skipping those for already-loaded systems.
+
+If supplied, PRELOAD-EVAL-EXPR is a string containing an expression to
+be EVALed before loading FASLs."
   (let* ((target-system (asdf:find-system system-name))
          (build-directory (uiop:ensure-pathname (uiop:native-namestring directory)
                                                 :namestring :native
@@ -42,7 +46,7 @@ skipping those for already-loaded systems."
     (compile-bundle-system-with-dependencies target-system build-directory)
     (build-bindings library build-directory :omit-init-function t)
     (create-incbin-source-file build-directory)
-    (create-fasl-loader-source-file library systems build-directory)
+    (create-fasl-loader-source-file library systems build-directory :preload-eval-expr preload-eval-expr)
     (create-cmakelists-file library systems build-directory)))
 
 (defun create-incbin-source-file (directory)
@@ -62,13 +66,16 @@ a valid C identifier."
   "Returns the name of the C function for loading the embedded FASLs for LIBRARY."
   (concatenate 'string (library-c-name library) "_load"))
 
-(defun create-fasl-loader-source-file (library systems directory)
+(defun create-fasl-loader-source-file (library systems directory &key preload-eval-expr)
   "Create a C source file in the DIRECTORY that embeds each of the FASL
 bundle files for non-required SYSTEMS using incbin and exports a
 function that requires any required SYSTEMs and then loads the
 embedded FASL bundles while also initializing any alien callable
-symbols defined in SYSTEMS. The C functions to perform
--requiring and loading are included from *BASE-LIBRARY-NAME*.h."
+symbols defined in SYSTEMS. The C functions to perform -requiring and
+loading are included from *BASE-LIBRARY-NAME*.h.
+
+If supplied, PRELOAD-EVAL-EXPR is a string containing an expression to
+be EVALed before loading FASLs."
   (flet ((write-load-calls (stream indent-size)
            (loop :for system :in (remove-if-not #'system-loadable-from-fasl-p systems)
                  :for system-name := (asdf:component-name system)
@@ -126,6 +133,8 @@ symbols defined in SYSTEMS. The C functions to perform
             (format stream "        &dll_mod);~%")
             (format stream "    GetModuleFileNameA(dll_mod, dll_path, ~D);~%" buf-size)
             (format stream "    lisp_load_shared_object(dll_path);~%")))
+        (when preload-eval-expr
+          (format stream "    lisp_eval_string(~S);~%" preload-eval-expr))
         (write-require-calls stream 4)
         (write-load-calls stream 4)
         (format stream "}")))))

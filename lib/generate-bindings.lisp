@@ -82,7 +82,7 @@
     #+(and win32 github-ci)
     (format stream "    libpath = Path(os.path.join(os.environ['CONDA_PREFIX'], 'bin', 'sbcl_librarian.dll')).resolve()~%")
     #-(and win32 github-ci)
-    (format stream "    libpath = Path(find_~a()).resolve()~%" name)
+    (format stream "    libpath = Path(find_~a())~a~%" name #-linux ".resolve()" #+linux "")
     (format stream "except Exception as e:~%")
     (format stream "    raise Exception('Unable to locate ~a') from e~%~%" name)
 

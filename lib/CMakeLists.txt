@@ -32,7 +32,7 @@ endif()
 # Generate the core file and C bindings
 add_custom_command(
   OUTPUT sbcl_librarian.c sbcl_librarian.h
-  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/..// ${SBCL} --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
+  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/..//: ${SBCL} --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

@@ -1,2 +1,4 @@
 (defpackage #:sbcl-librarian/example/libcalc
-  (:use #:cl))
+  (:shadowing-import-from
+   #:sbcl-librarian "ERROR" "WARNING" "ASSERT")
+  (:use #:cl #:sbcl-librarian))

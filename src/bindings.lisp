@@ -51,6 +51,27 @@
                                              :error-map (api-error-map api))))))))))
 
 (defun write-api-to-source (api linkage stream)
+  "For each function in `api' this function:
+
+- Write an explicit `extern' declaration for a variable to tell linker
+  to expose its symbol. This will allow `initialize_lisp' and/or `load'
+  to find and fill it with a pointer to corresponding LISP
+  function. `extern' declarations do not allocate space, so we need to
+  declare it again without `extern'.
+
+- Write a second declaration of this variable which allocates space and
+  explicitly assigns NULL to it at compilation time so that we can
+  reliably detect if it was not assigned with a pointer by
+  `initialize_lisp' or `load' for some reason.
+
+- Write a C function which properly calls corresponding LISP function
+  referenced by the declared variable.
+
+We do not place the `extern' declaration of the pointer variable into a
+header file (like we do it with function's `extern' declaration) because
+it is actually an implementation detail which is not intended to be
+accessed explicitly by users.
+"
   (dolist (spec (api-specs api))
     (destructuring-bind (kind &rest things) spec
       (ecase kind
@@ -59,7 +80,7 @@
         (:function
          (dolist (spec things)
            (destructuring-bind (name result-type typed-lambda-list) spec
-             (format stream "~A;~%~A~%"
+             (format stream "extern ~A;~%~:*~A = NULL;~%~A~%"
                      (c-function-declaration name result-type typed-lambda-list
                                              :datap t
                                              :externp nil

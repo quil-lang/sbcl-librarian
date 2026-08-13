@@ -13,7 +13,8 @@ target_link_directories(sbcl_librarian PRIVATE $ENV{BUILD_PREFIX}/Library/bin)
 else()
 target_link_directories(sbcl_librarian PRIVATE $ENV{BUILD_PREFIX}/lib)
 endif()
-target_link_libraries(sbcl_librarian PUBLIC sbcl)
+find_library(SBCL_LIBRARY sbcl)
+target_link_libraries(sbcl_librarian PUBLIC ${SBCL_LIBRARY})
 
 # Drop the lib prefix on the Windows DLL
 if(WIN32)

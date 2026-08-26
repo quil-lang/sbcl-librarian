@@ -78,7 +78,10 @@
           (c-function-declaration name ':int '((core :string))
                                   :datap nil
                                   :linkage linkage))
-  (format stream "  static int initialized = 0;~%")
+  ;; No local `initialized' here. Every generated wrapper guards on the global of
+  ;; that name, declared in sbcl_librarian_err.h and defined in entry_point.c, so a
+  ;; local one would shadow it: init() would bring Lisp up, set its own copy, and
+  ;; leave every API function returning LISP_ERR_NOT_INITIALIZED.
   (format stream "  char *init_args[] = {\"\", \"--core\", core, \"--noinform\", ~{\"~a\"~^, ~}};~%"
           initialize-lisp-args)
   (format stream "  if (initialized) return 1;~%")

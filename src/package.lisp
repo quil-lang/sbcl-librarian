@@ -7,7 +7,8 @@
    #:warning
    #:assert)
   (:use #:cl)
-  (:export #:define-handle-type
+  (:export #:define-type
+           #:define-handle-type
            #:define-enum-type
            #:define-error-map
            #:define-api

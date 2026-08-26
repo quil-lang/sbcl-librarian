@@ -160,7 +160,11 @@ library and its header file."
       (format stream "set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})~%")
       (format stream "find_library(BASE_LIBRARY NAMES lib~A${CMAKE_SHARED_LIBRARY_SUFFIX})~%" *base-library-name*)
       (format stream "add_library(~A SHARED ~{~A~^ ~}~@{ ~A~})~%" c-name source-filenames #+win32 "${BASE_LIBRARY}")
-      #+win32
+      ;; Clear the prefix on every platform, not just Windows. The CMake target is
+      ;; named after the library, so a library whose name already starts with "lib"
+      ;; would otherwise build as e.g. liblibquil.so, which no consumer expects --
+      ;; and the libcalc example in this repository links -lcalc, which resolves
+      ;; only if the output is libcalc.so rather than liblibcalc.so.
       (format stream "set_target_properties(~A PROPERTIES PREFIX \"\")~%" c-name)
       (format stream "target_link_libraries(~A PUBLIC ${BASE_LIBRARY})~%" c-name)
       (format stream "install(TARGETS ~A LIBRARY RUNTIME)~%" c-name)

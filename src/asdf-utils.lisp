@@ -52,19 +52,26 @@ DIRECTORY."
                                          (list system)
                                          (mapcar #'asdf:find-system (asdf:system-depends-on system))))
                                    (remove-if-not #'prebuilt-system-p dependency-systems))))
-    (with-output-translations
-        `(:output-translations
-          :inherit-configuration
-          ,@(loop :for system :in (cons target-system dependency-systems)
-                  :for fasl-filename := (system-fasl-bundle-filename system)
-                  :when (and (system-loadable-from-fasl-p system)
-                             (not (prebuilt-system-p system)))
-                    :collect `((,(asdf:system-source-directory system) :**/ ,fasl-filename)
-                               (:function (lambda (pathname dir-desig)
-                                            (declare (ignore pathname dir-desig))
-                                            (uiop:merge-pathnames* ,fasl-filename ,directory))))))
-      (with-recursive-compile-bundle-op
-        (asdf:oos 'asdf:compile-bundle-op target-system)))
+    (with-recursive-compile-bundle-op
+      (asdf:oos 'asdf:compile-bundle-op target-system)
+      ;; Copy each bundle to DIRECTORY under its flattened name, taking the source
+      ;; path from ASDF itself.
+      ;;
+      ;; This used to be done with an output-translation per system whose match
+      ;; pattern was built from the flattened name. That silently lost every
+      ;; secondary system: ASDF writes the bundle for MAGICL/CORE to
+      ;; magicl/core--system.fasl, turning the slash into a directory, so a pattern
+      ;; naming magicl--core--system.fasl never matched and the bundle stayed in the
+      ;; ASDF cache. The generated CMake project then referred to files that were
+      ;; never produced.
+      (loop :for system :in (cons target-system dependency-systems)
+            :when (and (system-loadable-from-fasl-p system)
+                       (not (prebuilt-system-p system)))
+              :do (let ((source (first (asdf:output-files 'asdf:compile-bundle-op system)))
+                        (dest (uiop:merge-pathnames* (system-fasl-bundle-filename system)
+                                                     directory)))
+                    (ensure-directories-exist dest)
+                    (uiop:copy-file source dest))))
     (dolist (system prebuilt-systems)
       (let ((dest-file (uiop:merge-pathnames* (system-fasl-bundle-filename system) directory)))
         (ensure-directories-exist dest-file)

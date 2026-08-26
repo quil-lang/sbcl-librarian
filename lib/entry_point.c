@@ -30,6 +30,19 @@ __thread jmp_buf fatal_lisp_error_handler;
 
 #define DEFAULT_HEAP_SIZE "8192"
 
+/*
+ * The core loaded at startup, looked up next to this shared library.
+ *
+ * Consumers that ship their Lisp code in a core of their own -- rather than as
+ * FASL bundles loaded on top of the stock core -- can point the runtime at it by
+ * defining this at compile time, e.g. -DSBCL_LIBRARIAN_CORE_NAME='"libquil.core"'.
+ * Doing so also keeps two such consumers from colliding when installed into the
+ * same directory.
+ */
+#ifndef SBCL_LIBRARIAN_CORE_NAME
+# define SBCL_LIBRARIAN_CORE_NAME "sbcl_librarian.core"
+#endif
+
 extern char *dir_name(char *path);
 extern void set_lossage_handler(void (*handler)(void));
 extern int initialize_lisp(int argc, const char *argv[], char *envp[]);
@@ -49,7 +62,7 @@ static void do_initialize_lisp(const char *libsbcl_librarian_path)
 {
     char *libsbcl_librarian_dir = dir_name(libsbcl_librarian_path);
     int libsbcl_librarian_dir_len = strlen(libsbcl_librarian_dir);
-    int core_path_size = libsbcl_librarian_dir_len + sizeof("sbcl_librarian.core") + 1;
+    int core_path_size = libsbcl_librarian_dir_len + sizeof(SBCL_LIBRARIAN_CORE_NAME) + 1;
     char *core_path = malloc(core_path_size);
 
     /*
@@ -66,7 +79,7 @@ static void do_initialize_lisp(const char *libsbcl_librarian_path)
       heap_size = get_env_heap_size;
     }
 
-    snprintf(core_path, core_path_size, "%ssbcl_librarian.core", libsbcl_librarian_dir);
+    snprintf(core_path, core_path_size, "%s" SBCL_LIBRARIAN_CORE_NAME, libsbcl_librarian_dir);
 
     const char *init_args[] = {"", "--dynamic-space-size", heap_size, "--core", core_path, "--noinform", "--no-userinit"};
 

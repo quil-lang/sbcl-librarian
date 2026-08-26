@@ -10,10 +10,12 @@ add_library(sbcl_librarian SHARED sbcl_librarian.c sbcl_librarian.h sbcl_librari
 if(WIN32)
 # DLLs go to the bin/ directory on Windows
 target_link_directories(sbcl_librarian PRIVATE $ENV{BUILD_PREFIX}/Library/bin)
+# SBCL names its DLL `libsbcl.so', so it can not be found the normal way.
+find_file(SBCL_LIBRARY libsbcl.so PATH_SUFFIXES lib)
 else()
 target_link_directories(sbcl_librarian PRIVATE $ENV{BUILD_PREFIX}/lib)
-endif()
 find_library(SBCL_LIBRARY sbcl)
+endif()
 target_link_libraries(sbcl_librarian PUBLIC ${SBCL_LIBRARY})
 
 # Drop the lib prefix on the Windows DLL
@@ -29,10 +31,18 @@ else()
     set(SBCL "sbcl")
 endif()
 
+# Platform-specific path separator
+if(WIN32)
+  set(SBCL_ENV_PATH_SEPARATOR "\\\;")
+else()
+  set(SBCL_ENV_PATH_SEPARATOR ":")
+endif()
+
+
 # Generate the core file and C bindings
 add_custom_command(
   OUTPUT sbcl_librarian.c sbcl_librarian.h
-  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/..//: ${SBCL} --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
+  COMMAND ${CMAKE_COMMAND} -E env CL_SOURCE_REGISTRY=${CMAKE_CURRENT_SOURCE_DIR}/..//${SBCL_ENV_PATH_SEPARATOR} ${SBCL} --script ${CMAKE_CURRENT_SOURCE_DIR}/generate-bindings.lisp
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

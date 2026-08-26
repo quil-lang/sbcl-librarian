@@ -31,7 +31,7 @@ endif
 all: example
 
 example: build/libcalc.$(DYNAMIC_LIB_SUFFUX)
-	$(CC) example.c -o example -lsbcl_librarian -lsbcl -lcalc \
+	$(CC) example.c -o example -lsbcl_librarian -lcalc \
 	      -L./build/ -I./libcalc/ $(CFLAGS)
 
 $(libcalc_files) &: libcalc.asd libcalc.lisp bindings.lisp script.lisp

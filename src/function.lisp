@@ -73,18 +73,19 @@ if (!setjmp(fatal_lisp_error_handler)) {
         (canonical-signature name result-type typed-lambda-list
                              :function-prefix function-prefix
                              :error-map error-map)
-      (let ((call-statement (format nil "~a result_code = ~a(~{~a~^, ~});"
-                                    (c-type return-type)
-                                    (concatenate 'string "_" (coerce-to-c-name callable-name))
-                                    (append
-                                     (mapcar (lambda (item)
-                                               (lisp-to-c-name (first item)))
-                                             typed-lambda-list)
-                                     (and result-type
-                                          (list "result"))))))
+      (let* ((callable-pointer-name (concatenate 'string "_" (coerce-to-c-name callable-name)))
+             (call-statement (format nil "~a result_code = ~a(~{~a~^, ~});"
+                                     (c-type return-type)
+                                     callable-pointer-name
+                                     (append
+                                      (mapcar (lambda (item)
+                                                (lisp-to-c-name (first item)))
+                                              typed-lambda-list)
+                                      (and result-type
+                                           (list "result"))))))
         (format nil "~a {~%~a~%}~%"
                 header
-                (format nil "    if (!initialized) {
+                (format nil "    if (!initialized || ~a == NULL) {
         return LISP_ERR_NOT_INITIALIZED;
     } else if (!fatal_sbcl_error_occurred && !setjmp(fatal_lisp_error_handler~a)) {
         void (*sigint_handler)(int) = signal(SIGINT, SIG_DFL);
@@ -109,6 +110,7 @@ if (!setjmp(fatal_lisp_error_handler)) {
     } else {
         ~a
     }"
+                        callable-pointer-name
                         ;; fatal_lisp_error_handler is a thunk on Windows
                         #+win32 "()" #-win32 ""
                         call-statement

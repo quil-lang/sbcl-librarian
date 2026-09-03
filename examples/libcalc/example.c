@@ -1,6 +1,6 @@
 #include <sbcl_librarian.h>
 #include <sbcl_librarian_err.h>
-#include "calc.h"
+#include <calc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

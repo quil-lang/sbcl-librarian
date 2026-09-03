@@ -1,23 +1,47 @@
 EXAMPLES_DIR := $(shell pwd)
 ROOT_DIR := $(shell dirname $(shell dirname $(EXAMPLES_DIR)))
 
+ifeq ($(SBCL),)
+    SBCL := sbcl
+endif
+
+libcalc_files := $(addprefix libcalc/,calc.c calc.h CMakeLists.txt      \
+                                      fasl_loader.c incbin.h            \
+                                      libcalc--system.fasl              \
+                                      sbcl-librarian--system.fasl)
+buildsystem_files := $(addprefix build/,Makefile CMakeCache.txt         \
+                                        cmake_install.cmake             \
+                                        libcalc--system.fasl            \
+                                        sbcl-librarian--system.fasl)
+
+ifeq ($(OS),Windows_NT)
+    DYNAMIC_LIB_SUFFUX = dll
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        DYNAMIC_LIB_SUFFUX = so
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        DYNAMIC_LIB_SUFFUX = dylib
+    endif
+endif
+
 .PHONY: all clean
 
 all: example
 
-example: libsbcl.so libcalc.dylib
-	$(CC) example.c -o example -lsbcl -lcalc -L.
+example: build/libcalc.$(DYNAMIC_LIB_SUFFUX)
+	$(CC) example.c -o example -lsbcl_librarian -lcalc \
+	      -L./build/ -I./libcalc/ $(CFLAGS)
 
-# For some reason, even on OSX SBCL builds its library with *.so
-# extension, but this works!
-libsbcl.so: $(SBCL_SRC)
-	test ! -e $(SBCL_SRC)/src/runtime/libsbcl.so && cd $(SBCL_SRC) && ./make-shared-library.sh || true
-	cp $(SBCL_SRC)/src/runtime/libsbcl.so ./
+$(libcalc_files) &: libcalc.asd libcalc.lisp bindings.lisp script.lisp
+	CL_SOURCE_REGISTRY="$(ROOT_DIR)//" $(SBCL) --script "script.lisp"
 
-libcalc.core libcalc.c libcalc.h libcalc.py: libcalc.lisp
-	CL_SOURCE_REGISTRY="$(ROOT_DIR)//" $(SBCL_SRC)/run-sbcl.sh --script "script.lisp"
+$(buildsystem_files) &: $(libcalc_files)
+	cmake -S libcalc/ -B build/
 
-libcalc.dylib: libcalc.core libcalc.c
-	$(CC) -dynamiclib -o $@ libcalc.c -L$(SBCL_SRC)/src/runtime -lsbcl
+build/libcalc.$(DYNAMIC_LIB_SUFFUX): $(buildsystem_files)
+	cmake --build build/
+
 clean:
-	rm -f example libsbcl.so libcalc.c libcalc.h libcalc.core libcalc.py libcalc.dylib
+	rm -rf example libcalc/ build/

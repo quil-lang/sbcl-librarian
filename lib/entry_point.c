@@ -68,7 +68,7 @@ static void do_initialize_lisp(const char *libsbcl_librarian_path)
 
     snprintf(core_path, core_path_size, "%ssbcl_librarian.core", libsbcl_librarian_dir);
 
-    const char *init_args[] = {"", "--dynamic-space-size", heap_size, "--core", core_path, "--noinform", "--no-userinit"};
+    const char *init_args[] = {"", "--dynamic-space-size", heap_size, "--core", core_path, "--noinform", "--no-userinit", "--lose-on-corruption"};
 
     /*
      * It seems that on Linux, dlsym(NULL, "sym") fails to find "sym"
